@@ -123,3 +123,128 @@ Note: This is more conservative than simple LTV ($800) because early churn is hi
 Use historical data to predict future retention and spending patterns. Advanced approach for companies with large datasets.
 
 **Inputs**: Customer attributes (demographics, behavior, acquisition channel), historical purchase/churn data.
+
+**Model**: Regression, survival analysis, or ML model predicts LTV for each customer segment.
+
+### LTV for Different Business Models
+
+**Transactional (E-commerce)**:
+
+```
+LTV = AOV × Purchase Frequency × Gross Margin % × Customer Lifetime (years)
+```
+
+**Example**:
+- AOV = $100
+- Purchases/year = 3
+- Gross Margin = 50%
+- Lifetime = 2 years
+- LTV = $100 × 3 × 50% × 2 = $300
+
+**Marketplace**:
+
+```
+LTV = GMV per user × Take Rate × Gross Margin % ÷ Churn Rate
+```
+
+**Example** (ride-sharing):
+- Monthly GMV per rider = $200 (total rides)
+- Take Rate = 25%
+- Gross Margin = 80% (after payment processing)
+- Monthly Churn = 10%
+- Lifetime = 1 ÷ 0.10 = 10 months
+- Monthly Revenue = $200 × 25% = $50
+- LTV = $50 × 10 months × 80% = $400
+
+**Freemium**:
+
+```
+Blended LTV = (Free-to-Paid Conversion % × Paid User LTV) - (Free User Costs × Avg Free User Lifetime)
+```
+
+**Example**:
+- 100 free users, 5% convert to paid
+- Paid LTV = $1,000
+- Free user cost = $2/month (hosting), avg lifetime 6 months
+- Blended LTV = (0.05 × $1,000) - ($2 × 6) = $50 - $12 = $38 per free user
+
+### Improving LTV
+
+**Levers to increase LTV**:
+
+1. **Reduce churn**: Improve onboarding, product engagement, customer success. 1% churn reduction → 10-25% LTV increase.
+2. **Increase ARPU**: Upsells, cross-sells, premium tiers, usage-based pricing.
+3. **Improve gross margin**: Reduce COGS, optimize infrastructure, negotiate better rates.
+4. **Extend lifetime**: Long-term contracts, annual billing (locks in customers).
+
+**Example impact** (SaaS):
+- Current: ARPU $50, Churn 5%, Margin 80% → LTV = $800
+- Reduce churn to 4%: LTV = $50 × 80% ÷ 0.04 = $1,000 (+25%)
+- Increase ARPU to $60: LTV = $60 × 80% ÷ 0.05 = $960 (+20%)
+- Both: LTV = $60 × 80% ÷ 0.04 = $1,200 (+50%)
+
+---
+
+## 3. Contribution Margin Analysis
+
+### Contribution Margin Formula
+
+```
+Contribution Margin = Revenue - Variable Costs
+Contribution Margin % = (Revenue - Variable Costs) ÷ Revenue
+```
+
+**Variable costs** (scale with each unit):
+- COGS (cost of goods sold)
+- Hosting/infrastructure per user
+- Payment processing fees (2-3% of revenue)
+- Customer support (per-customer time)
+- Shipping/fulfillment
+- Transaction-specific costs
+
+**Fixed costs** (do NOT include):
+- Engineering salaries (build product once)
+- Rent, utilities
+- Admin, HR, finance teams
+
+### Contribution Margin by Business Model
+
+**SaaS**:
+- Revenue: $100/month subscription
+- Variable costs: $15 hosting + $3 payment fees = $18
+- Contribution Margin: $100 - $18 = $82
+- Margin %: 82%
+
+**E-commerce**:
+- Revenue: $80 product sale
+- Variable costs: $30 COGS + $5 shipping + $2.40 payment fees = $37.40
+- Contribution Margin: $80 - $37.40 = $42.60
+- Margin %: 53%
+
+**Marketplace**:
+- GMV: $200 transaction
+- Take Rate: 20% → Revenue = $40
+- Variable costs: $2 payment fees + $3 support = $5
+- Contribution Margin: $40 - $5 = $35
+- Margin %: 87.5% (of platform revenue)
+
+### Improving Contribution Margin
+
+**Levers**:
+1. **Increase prices**: Directly increases revenue per unit.
+2. **Reduce COGS**: Negotiate supplier costs, economies of scale, vertical integration.
+3. **Optimize infrastructure**: Right-size hosting, use cheaper providers, optimize usage.
+4. **Automate support**: Self-service, chatbots, knowledge base reduce manual support time.
+5. **Negotiate fees**: Lower payment processing rates (volume discounts), reduce transaction costs.
+
+**Example** (E-commerce):
+- Current: Revenue $80, COGS $30, Margin 53%
+- Negotiate COGS to $25: Margin = ($80 - $32.40) / $80 = 59.5% (+6.5pp)
+- Increase price to $90: Margin = ($90 - $37.65) / $90 = 58% (+5pp)
+- Both: Margin = ($90 - $32.65) / $90 = 63.7% (+10.7pp)
+
+---
+
+## 4. Cohort Analysis
+
+### Why Cohort Analysis Matters
