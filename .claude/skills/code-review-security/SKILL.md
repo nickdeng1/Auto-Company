@@ -160,3 +160,165 @@ result = ast.literal_eval(user_input)  # Only for literal structures
 
 ---
 
+#### A04: Insecure Design
+
+**What to look for:**
+- Missing rate limiting on authentication endpoints
+- No account lockout after failed login attempts
+- Missing CAPTCHA on public-facing forms
+- Business logic flaws (e.g., negative amounts, self-privilege-escalation)
+
+**Review checklist:**
+- [ ] Rate limiting on login, registration, and password reset
+- [ ] Account lockout or exponential backoff after 5+ failed attempts
+- [ ] Business logic validates constraints (positive amounts, valid transitions)
+- [ ] Sensitive operations require re-authentication
+
+---
+
+#### A05: Security Misconfiguration
+
+**What to look for:**
+- Debug mode enabled in production
+- CORS configured with wildcard `*` origins
+- Default credentials or admin accounts
+- Verbose error messages exposing stack traces
+
+**Python/FastAPI checks:**
+```python
+# BAD: Wide-open CORS
+app.add_middleware(CORSMiddleware, allow_origins=["*"])
+
+# GOOD: Explicit allowed origins
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://app.example.com"],
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["Authorization", "Content-Type"],
+)
+
+# BAD: Debug mode in production
+app = FastAPI(debug=True)
+
+# GOOD: Debug only in development
+app = FastAPI(debug=settings.DEBUG)  # DEBUG=False in production
+```
+
+**Review checklist:**
+- [ ] CORS origins are explicit (no wildcard in production)
+- [ ] Debug mode disabled in production configuration
+- [ ] Error responses do not expose stack traces or internal details
+- [ ] Default admin credentials are changed or removed
+- [ ] Security headers set (X-Content-Type-Options, X-Frame-Options, etc.)
+
+---
+
+#### A06: Vulnerable and Outdated Components
+
+**Review checklist:**
+- [ ] No known CVEs in Python dependencies (`pip-audit` or `safety check`)
+- [ ] No known CVEs in npm dependencies (`npm audit`)
+- [ ] Dependencies pinned to specific versions in lock files
+- [ ] No deprecated packages still in use
+
+---
+
+#### A07: Identification and Authentication Failures
+
+**What to look for:**
+- Weak password policies
+- Session tokens that do not expire
+- Missing multi-factor authentication for admin actions
+- JWT tokens without expiration
+
+**Python checks:**
+```python
+# BAD: JWT without expiration
+token = jwt.encode({"sub": user_id}, SECRET_KEY, algorithm="HS256")
+
+# GOOD: JWT with expiration
+token = jwt.encode(
+    {"sub": user_id, "exp": datetime.utcnow() + timedelta(minutes=30)},
+    SECRET_KEY,
+    algorithm="HS256",
+)
+```
+
+**Review checklist:**
+- [ ] JWT tokens have expiration (`exp` claim)
+- [ ] Refresh tokens are stored securely and can be revoked
+- [ ] Password policy enforces minimum length (12+) and complexity
+- [ ] Session invalidation on password change or logout
+- [ ] No user enumeration via login error messages
+
+---
+
+#### A08: Software and Data Integrity Failures
+
+**Review checklist:**
+- [ ] CI/CD pipeline validates artifact integrity
+- [ ] No unsigned or unverified packages
+- [ ] Deserialization of untrusted data uses safe methods (no `pickle.loads`)
+- [ ] Database migrations are reviewed before execution
+
+---
+
+#### A09: Security Logging and Monitoring Failures
+
+**Review checklist:**
+- [ ] Authentication events are logged (login, logout, failed attempts)
+- [ ] Authorization failures are logged with context
+- [ ] Sensitive data is NOT included in logs (passwords, tokens, PII)
+- [ ] Log entries include timestamp, user ID, IP address, action
+- [ ] Alerting configured for suspicious patterns (brute force, unusual access)
+
+---
+
+#### A10: Server-Side Request Forgery (SSRF)
+
+**What to look for:**
+- User-supplied URLs used in server-side requests
+- Redirect endpoints that accept arbitrary URLs
+
+**Python checks:**
+```python
+# BAD: Fetch arbitrary URL from user input
+url = request.query_params["url"]
+response = httpx.get(url)  # SSRF: can access internal services
+
+# GOOD: Validate URL against allowlist
+ALLOWED_HOSTS = {"api.example.com", "cdn.example.com"}
+parsed = urlparse(url)
+if parsed.hostname not in ALLOWED_HOSTS:
+    raise HTTPException(400, "URL not allowed")
+response = httpx.get(url)
+```
+
+**Review checklist:**
+- [ ] No server-side requests to user-controlled URLs without validation
+- [ ] URL allowlists used for external integrations
+- [ ] Internal service URLs not exposed in error messages
+
+---
+
+### Python-Specific Security Checks
+
+Beyond OWASP, review Python code for these patterns:
+
+| Pattern | Risk | Fix |
+|---------|------|-----|
+| `eval(user_input)` | Remote code execution | Remove or use `ast.literal_eval` |
+| `pickle.loads(data)` | Arbitrary code execution | Use JSON or `msgpack` |
+| `subprocess.run(cmd, shell=True)` | Command injection | Pass args as list, `shell=False` |
+| `yaml.load(data)` | Code execution | Use `yaml.safe_load(data)` |
+| `os.system(cmd)` | Command injection | Use `subprocess.run([...])` |
+| Raw SQL strings | SQL injection | Use ORM or parameterized queries |
+| `hashlib.md5(password)` | Weak hashing | Use `bcrypt` via `passlib` |
+| `jwt.decode(token, options={"verify_signature": False})` | Auth bypass | Always verify signature |
+| `open(user_path)` | Path traversal | Validate path, use `pathlib.resolve()` |
+| `tempfile.mktemp()` | Race condition | Use `tempfile.mkstemp()` |
+
+### React-Specific Security Checks
+
+| Pattern | Risk | Fix |
+|---------|------|-----|
