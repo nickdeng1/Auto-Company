@@ -157,3 +157,162 @@ Extended reasoning acceptable (5-45 min)
 Time investment: 5-45 minutes
 ```
 
+**Intention carried:** "acceptable" → asking permission | "investment" → stating fact
+
+---
+
+### MEDIUM PRIORITY (6 issues)
+
+#### Issue #9: "Good autonomous assumptions" - vague judgment (Line 66)
+**Current:**
+```markdown
+**Good autonomous assumptions:**
+```
+
+**Problem:** "Good" is vague value judgment without criteria
+
+**Fix:**
+```markdown
+**Default assumptions:**
+```
+
+**Intention carried:** "Good" → subjective approval-seeking | "Default" → objective, standard procedure
+
+---
+
+#### Issue #10: "Standard+" unclear notation (Lines 96, 101)
+**Current:**
+```markdown
+**Standard+ adds:**
+**Deep+ adds:**
+```
+
+**Problem:** "+" notation is programming jargon, unclear if it means "and above" or "additional to"
+
+**Fix:**
+```markdown
+**Standard/Deep/UltraDeep execute:**
+**Deep/UltraDeep execute:**
+```
+
+**Intention carried:** "+" → ambiguous scope | explicit listing → clear scope
+
+---
+
+#### Issue #11: "(optional)" weakens directive (Line 174)
+**Current:**
+```markdown
+4. Next steps (optional)
+```
+
+**Problem:** "(optional)" signals uncertainty, weakens the delivery item
+
+**Fix:**
+```markdown
+4. Next steps (if relevant)
+```
+OR remove entirely since it's in "Deliver to user" section
+
+**Intention carried:** "(optional)" → uncertain, dismissible | "(if relevant)" → conditional, purposeful | removed → expected
+
+---
+
+#### Issue #12: "Offer:" implies asking permission (Lines 176-179)
+**Current:**
+```markdown
+**Offer:**
+- Deep-dive any section
+- Follow-up questions
+- Alternative formats
+```
+
+**Problem:** "Offer" implies asking permission, waiting for response, breaks autonomous flow
+
+**Fix:**
+```markdown
+**Available on request:**
+- Section deep-dives
+- Follow-up analysis
+- Alternative formats
+```
+OR remove entirely (user will ask if interested)
+
+**Intention carried:** "Offer" → salesperson, permission-seeking | "Available on request" → service menu, user-initiated | removed → autonomous
+
+---
+
+#### Issue #13: "hit" colloquial (Line 234)
+**Current:**
+```markdown
+Time constraint hit → Package partial results, document gaps
+```
+
+**Problem:** "hit" is colloquial, imprecise for technical directive
+
+**Fix:**
+```markdown
+Time constraint reached → Package partial results, document gaps
+```
+
+**Intention carried:** "hit" → casual, imprecise | "reached" → formal, precise
+
+---
+
+#### Issue #14: "explicitly needed" redundant (Line 324)
+**Current:**
+```markdown
+Load these files only when explicitly needed for current phase.
+```
+
+**Problem:** "explicitly needed" is redundant - either needed or not, "explicitly" adds no precision
+
+**Fix:**
+```markdown
+Load files on-demand for current phase only.
+```
+
+**Intention carried:** "explicitly needed" → overthinking, redundant | "on-demand" → clear technical term
+
+---
+
+## Impact Analysis
+
+### Before Fixes (Current State)
+
+**Hedge words count:** 4 ("reasonable" ×2, "genuinely", "acceptable")
+**Weak modal verbs:** 2 ("can redirect", "may")
+**Passive constructions:** 3 ("can", "acceptable", "optional")
+**Vague adjectives:** 2 ("good", "reasonable")
+**Colloquialisms:** 1 ("hit")
+**Redundancies:** 2 ("explicitly needed", "NO need to")
+
+**Total weakness indicators:** 14
+
+### After Fixes (Proposed State)
+
+**Hedge words count:** 0
+**Weak modal verbs:** 0
+**Passive constructions:** 0
+**Vague adjectives:** 0
+**Colloquialisms:** 0
+**Redundancies:** 0
+
+**Total weakness indicators:** 0
+
+---
+
+## Word Intention Analysis
+
+### Critical Word Replacements
+
+| Current Word | Unintended Intention | Replacement | Intended Intention |
+|--------------|---------------------|-------------|-------------------|
+| reasonable | subjective, cautious | infer/derive | objective, confident |
+| genuinely | doubting, qualifying | [remove] | certain, definitive |
+| can | permission-seeking | will | confident expectation |
+| if needed | uncertain | if incorrect | conditional, clear |
+| NO need to | passive, permissive | Proceed without | active, imperative |
+| Don't | casual, conversational | Do not | formal, authoritative |
+| ask to | tentative, weak | request | professional, clear |
+| When uncertain | hesitant, contradictory | Priority | directive, unambiguous |
+| acceptable | permission-seeking | investment | factual, confident |
