@@ -138,3 +138,142 @@ API_URL = "https://api.example.com"
 ```typescript
 const apiUrl = env.API_URL;
 ```
+
+### KV Namespace
+```typescript
+// Put with TTL
+await env.KV.put('session:token', JSON.stringify(data), {
+  expirationTtl: 3600
+});
+
+// Get
+const data = await env.KV.get('session:token', 'json');
+
+// Delete
+await env.KV.delete('session:token');
+
+// List with prefix
+const list = await env.KV.list({ prefix: 'user:123:' });
+```
+
+### D1 Database
+```typescript
+// Query
+const result = await env.DB.prepare(
+  'SELECT * FROM users WHERE id = ?'
+).bind(userId).first();
+
+// Insert
+await env.DB.prepare(
+  'INSERT INTO users (name, email) VALUES (?, ?)'
+).bind('Alice', 'alice@example.com').run();
+
+// Batch (atomic)
+await env.DB.batch([
+  env.DB.prepare('UPDATE accounts SET balance = balance - 100 WHERE id = ?').bind(1),
+  env.DB.prepare('UPDATE accounts SET balance = balance + 100 WHERE id = ?').bind(2)
+]);
+```
+
+### R2 Bucket
+```typescript
+// Put object
+await env.R2_BUCKET.put('path/to/file.jpg', fileBuffer, {
+  httpMetadata: {
+    contentType: 'image/jpeg'
+  }
+});
+
+// Get object
+const object = await env.R2_BUCKET.get('path/to/file.jpg');
+if (!object) {
+  return new Response('Not found', { status: 404 });
+}
+
+// Stream response
+return new Response(object.body, {
+  headers: {
+    'Content-Type': object.httpMetadata?.contentType || 'application/octet-stream'
+  }
+});
+
+// Delete
+await env.R2_BUCKET.delete('path/to/file.jpg');
+```
+
+## Context API
+
+### waitUntil (Background Tasks)
+```typescript
+export default {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    // Run analytics after response sent
+    ctx.waitUntil(
+      fetch('https://analytics.example.com/log', {
+        method: 'POST',
+        body: JSON.stringify({ url: request.url })
+      })
+    );
+
+    return new Response('OK');
+  }
+};
+```
+
+### passThroughOnException
+```typescript
+// Continue to origin on error
+ctx.passThroughOnException();
+
+// Your code that might throw
+const data = await riskyOperation();
+```
+
+## Error Handling
+
+```typescript
+export default {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    try {
+      const response = await processRequest(request, env);
+      return response;
+    } catch (error) {
+      console.error('Error:', error);
+
+      // Log to external service
+      ctx.waitUntil(
+        fetch('https://logging.example.com/error', {
+          method: 'POST',
+          body: JSON.stringify({
+            error: error.message,
+            url: request.url
+          })
+        })
+      );
+
+      return new Response('Internal Server Error', { status: 500 });
+    }
+  }
+};
+```
+
+## CORS
+
+```typescript
+function corsHeaders(origin: string) {
+  return {
+    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Max-Age': '86400'
+  };
+}
+
+export default {
+  async fetch(request: Request): Promise<Response> {
+    const origin = request.headers.get('Origin') || '*';
+
+    // Handle preflight
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { headers: corsHeaders(origin) });
+    }
