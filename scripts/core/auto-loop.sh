@@ -154,3 +154,159 @@ backup_consensus() {
     if [ -f "$CONSENSUS_FILE" ]; then
         cp "$CONSENSUS_FILE" "$CONSENSUS_FILE.bak"
     fi
+}
+
+restore_consensus() {
+    if [ -f "$CONSENSUS_FILE.bak" ]; then
+        cp "$CONSENSUS_FILE.bak" "$CONSENSUS_FILE"
+        log "Consensus restored from backup after failed cycle"
+    fi
+}
+
+validate_consensus() {
+    if [ ! -s "$CONSENSUS_FILE" ]; then
+        return 1
+    fi
+    if ! grep -q "^# Auto Company Consensus" "$CONSENSUS_FILE"; then
+        return 1
+    fi
+    if ! grep -q "^## Next Action" "$CONSENSUS_FILE"; then
+        return 1
+    fi
+    if ! grep -q "^## Company State" "$CONSENSUS_FILE"; then
+        return 1
+    fi
+    return 0
+}
+
+consensus_changed_since_backup() {
+    if [ ! -f "$CONSENSUS_FILE" ]; then
+        return 1
+    fi
+
+    if [ ! -f "$CONSENSUS_FILE.bak" ]; then
+        return 0
+    fi
+
+    if cmp -s "$CONSENSUS_FILE" "$CONSENSUS_FILE.bak"; then
+        return 1
+    fi
+
+    return 0
+}
+
+resolve_codex_bin() {
+    if [ -n "$CODEX_BIN" ]; then
+        if [ -x "$CODEX_BIN" ]; then
+            echo "$CODEX_BIN"
+            return 0
+        fi
+        if command -v "$CODEX_BIN" >/dev/null 2>&1; then
+            command -v "$CODEX_BIN"
+            return 0
+        fi
+    fi
+
+    # Prefer WSL-local Codex installed via nvm.
+    local nvm_candidate=""
+    for candidate in "$HOME"/.nvm/versions/node/*/bin/codex; do
+        if [ -x "$candidate" ]; then
+            nvm_candidate="$candidate"
+        fi
+    done
+    if [ -n "$nvm_candidate" ]; then
+        echo "$nvm_candidate"
+        return 0
+    fi
+
+    # Fallback: ask an interactive bash shell (loads user profile).
+    local interactive_candidate
+    interactive_candidate=$(bash -ic 'command -v codex' 2>/dev/null | tail -n1 | tr -d '\r' || true)
+    if [ -n "$interactive_candidate" ] && [ -x "$interactive_candidate" ]; then
+        echo "$interactive_candidate"
+        return 0
+    fi
+
+    # Last fallback: current shell PATH.
+    if command -v codex >/dev/null 2>&1; then
+        command -v codex
+        return 0
+    fi
+
+    return 1
+}
+
+run_codex_cycle() {
+    local prompt="$1"
+    local output_file timeout_flag message_file
+
+    output_file=$(mktemp)
+    timeout_flag=$(mktemp)
+    message_file=$(mktemp)
+
+    set +e
+    (
+        cd "$PROJECT_DIR" || exit 1
+        local codex_cmd=("$RESOLVED_CODEX_BIN" "exec" "-c" "sandbox_mode=\"${CODEX_SANDBOX_MODE}\"" "-o" "$message_file")
+        if [ -n "$MODEL" ]; then
+            codex_cmd+=("-m" "$MODEL")
+        fi
+        codex_cmd+=("$prompt")
+        "${codex_cmd[@]}"
+    ) > "$output_file" 2>&1 &
+    local codex_pid=$!
+
+    (
+        sleep "$CYCLE_TIMEOUT_SECONDS"
+        if kill -0 "$codex_pid" 2>/dev/null; then
+            echo "1" > "$timeout_flag"
+            kill -TERM "$codex_pid" 2>/dev/null || true
+            sleep 5
+            kill -KILL "$codex_pid" 2>/dev/null || true
+        fi
+    ) &
+    local watchdog_pid=$!
+
+    wait "$codex_pid"
+    EXIT_CODE=$?
+
+    kill "$watchdog_pid" 2>/dev/null || true
+    wait "$watchdog_pid" 2>/dev/null || true
+    set -e
+
+    OUTPUT=$(cat "$output_file")
+    RESULT_MESSAGE=$(cat "$message_file" 2>/dev/null || true)
+    rm -f "$output_file" "$message_file"
+
+    if [ -s "$timeout_flag" ]; then
+        CYCLE_TIMED_OUT=1
+        EXIT_CODE=124
+    else
+        CYCLE_TIMED_OUT=0
+    fi
+    rm -f "$timeout_flag"
+}
+
+extract_cycle_metadata() {
+    RESULT_TEXT=""
+    CYCLE_COST="N/A"
+    CYCLE_SUBTYPE="unknown"
+    CYCLE_TYPE="codex_exec"
+
+    RESULT_TEXT=$(echo "$RESULT_MESSAGE" | head -c 2000 || true)
+    if [ -z "$RESULT_TEXT" ]; then
+        RESULT_TEXT=$(echo "$OUTPUT" | head -c 2000 || true)
+    fi
+
+    if [ "$EXIT_CODE" -eq 0 ]; then
+        CYCLE_SUBTYPE="success"
+    else
+        CYCLE_SUBTYPE="error"
+    fi
+}
+
+# === Setup ===
+
+mkdir -p "$LOG_DIR" "$PROJECT_DIR/memories"
+
+# Clean up stale stop file from previous run
