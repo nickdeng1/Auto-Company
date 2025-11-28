@@ -147,3 +147,152 @@ Problem Classification:
 - [ ] Growth problem → Use: Compounding, Leverage, Power law
 - [ ] Competition problem → Use: Evolution, Red Queen effect, Game theory
 ```
+
+### Step 2: Apply Multiple Models
+
+**Rule**: Use at least 3 models from different disciplines
+
+```markdown
+## Multi-Perspective Analysis
+
+### Physics Perspective (Leverage)
+- Observation: Key actions proposed in article
+- Analysis: Which action yields maximum output with minimum input?
+- Conclusion: [Identify leverage points]
+
+### Psychology Perspective (Cognitive Biases)
+- Observation: Argumentation approach
+- Analysis: Any confirmation or survivorship bias present?
+- Conclusion: [Evaluate argument quality]
+
+### Economics Perspective (Incentives)
+- Observation: Stakeholders involved
+- Analysis: Are incentives aligned?
+- Conclusion: [Understand behavioral motivations]
+```
+
+### Step 3: Find Model Intersections
+
+```markdown
+## Cross-Model Insights
+
+When multiple models point to same conclusion → confidence ↑
+When models contradict → need deeper investigation
+
+Intersection discoveries:
+1. [Model A] + [Model B] → [Shared insight]
+2. [Contradiction] → [Issue requiring further analysis]
+```
+
+### Step 4: Synthesize Judgment
+
+```markdown
+## Integrated Conclusion
+
+Based on multi-model analysis:
+- ✅ Strongly supported views: [List]
+- ⚠️  Proceed with caution: [List]
+- ❌ Problematic assumptions: [List]
+
+Meta-cognitive check:
+- Did I use sufficiently diverse models?
+- Any important perspectives missing?
+- Over-reliance on any single model?
+```
+
+## Practical Example
+
+### Example: Analyzing Startup Article
+
+**Article Claim**: "Rapid growth is key to startup success"
+
+#### Multi-Model Analysis:
+
+**1. Ecosystem Model (Biology)**
+- Insight: Too-rapid growth can disrupt organizational "ecosystem balance"
+- Risk: Culture dilution, quality decline
+
+**2. Critical Mass Model (Physics)**
+- Insight: Must reach certain scale to survive
+- Support: Network effects require user base
+
+**3. Marginal Utility Model (Economics)**
+- Insight: Growth benefits diminish
+- Question: Is unlimited growth speed pursuit rational?
+
+**4. Feedback Loop Model (Systems)**
+- Insight: Rapid growth → resource strain → quality drop → user churn (negative feedback)
+- Risk: Growth trap
+
+**Synthesized Judgment**:
+- ✅ Article valid: Early stage needs rapid market validation
+- ⚠️  Missing: Sustainable vs. growth-at-all-costs
+- ❌ Overlooked: Industry/stage-specific growth rhythms
+
+## Common Pitfalls
+
+### ❌ Wrong Usage
+
+1. **Model Misuse**: Force-fitting irrelevant models
+2. **Single Dependency**: Actually using only one model, pretending it's multiple
+3. **Over-complexity**: Piling models without real insights
+4. **Ignoring Context**: Not considering specific situational differences
+
+### ✅ Correct Usage
+
+1. **Choose Relevance**: Select models related to problem essence
+2. **Apply Deeply**: Truly understand model applicability
+3. **Seek Conflicts**: Pay special attention to model contradictions
+4. **Stay Flexible**: Adjust model selection based on new information
+
+## Building Your Model Library
+
+### Beginner Level (Essential)
+- First principles
+- Opportunity cost
+- Compounding
+- Feedback loops
+- Cognitive biases
+
+### Intermediate Level (Expansion)
+- Ecosystem
+- Power law
+- Emergence
+- Red Queen effect
+- Game theory
+
+### Advanced Level (Specialization)
+- Deepen based on your domain
+- Cross-disciplinary integration
+- Create your own model combinations
+
+## Learning Recommendations
+
+1. **Broad Reading**: Study classics from different disciplines
+2. **Deliberate Practice**: Try applying 3+ models to every problem
+3. **Build Index**: Maintain personal "model → use case" catalog
+4. **Reflect**: Note which model combinations work especially well
+5. **Teach Others**: Explaining models deepens understanding
+
+## Recommended Resources
+
+**Books**:
+- "Poor Charlie's Almanack" - Charlie Munger
+- "The Art of Thinking Clearly" - Rolf Dobelli
+- "Principles" - Ray Dalio
+- "Super Thinking" - Gabriel Weinberg
+
+**Key Quote**:
+> "You must know the big ideas in the big disciplines and use them routinely—all of them, not just a few."
+> — Charlie Munger
+
+## Integration with Other Frameworks
+
+- **Critical Thinking**: Mental models help identify argument blind spots
+- **Systems Thinking**: Provides more tools for analyzing systems
+- **First Principles**: Can serve as one of the mental models
+- **Six Thinking Hats**: Complementary multi-perspective method
+
+---
+
+**Remember**: The goal of mental models isn't using more models, but gaining deeper insights. Quality > Quantity.
