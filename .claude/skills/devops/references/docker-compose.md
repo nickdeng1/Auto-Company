@@ -144,3 +144,149 @@ docker compose up
 docker compose -f compose.yml -f compose.prod.yml up -d
 ```
 
+## Health Checks
+
+```yaml
+services:
+  web:
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 3s
+      start_period: 40s
+      retries: 3
+```
+
+## Resource Limits
+
+```yaml
+services:
+  web:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+```
+
+## Logging
+
+```yaml
+services:
+  web:
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+```
+
+## Environment Variables
+
+**Using .env file:**
+```bash
+# .env
+DATABASE_URL=postgresql://user:pass@db:5432/app
+API_KEY=secret
+```
+
+```yaml
+services:
+  web:
+    env_file:
+      - .env
+```
+
+## Networking
+
+Services on same network communicate via service name:
+
+```yaml
+services:
+  web:
+    depends_on:
+      - db
+    environment:
+      # Use service name as hostname
+      - DATABASE_URL=postgresql://user:pass@db:5432/app
+```
+
+## Volume Backup/Restore
+
+```bash
+# Backup
+docker compose run --rm -v app_data:/data -v $(pwd):/backup \
+  alpine tar czf /backup/backup.tar.gz /data
+
+# Restore
+docker compose run --rm -v app_data:/data -v $(pwd):/backup \
+  alpine tar xzf /backup/backup.tar.gz -C /data
+```
+
+## Common Stacks
+
+### Web + Database + Cache
+```yaml
+services:
+  web:
+    build: .
+    depends_on:
+      - db
+      - redis
+  db:
+    image: postgres:15-alpine
+  redis:
+    image: redis:7-alpine
+```
+
+### Microservices
+```yaml
+services:
+  api-gateway:
+    build: ./gateway
+  user-service:
+    build: ./services/users
+  order-service:
+    build: ./services/orders
+  rabbitmq:
+    image: rabbitmq:3-management
+```
+
+## Best Practices
+
+- Use named volumes for data persistence
+- Implement health checks for all services
+- Set restart policies for production
+- Use environment-specific compose files
+- Configure resource limits
+- Enable logging with size limits
+- Use depends_on for service ordering
+- Network isolation with custom networks
+
+## Troubleshooting
+
+```bash
+# View service logs
+docker compose logs -f service-name
+
+# Check service status
+docker compose ps
+
+# Restart specific service
+docker compose restart service-name
+
+# Rebuild service
+docker compose up --build service-name
+
+# Remove everything
+docker compose down --volumes --rmi all
+```
+
+## Resources
+
+- Docs: https://docs.docker.com/compose/
+- Compose Specification: https://docs.docker.com/compose/compose-file/
+- Best Practices: https://docs.docker.com/compose/production/
