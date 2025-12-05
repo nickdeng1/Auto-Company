@@ -147,3 +147,151 @@ gcloud services list
 ```bash
 # JSON (recommended for scripting)
 gcloud compute instances list --format=json
+
+# YAML
+gcloud compute instances list --format=yaml
+
+# CSV
+gcloud compute instances list --format="csv(name,zone,status)"
+
+# Value (single field)
+gcloud config get-value project --format="value()"
+
+# Custom table
+gcloud compute instances list \
+  --format="table(name,zone,machineType,status)"
+```
+
+## Filtering
+
+```bash
+# Server-side filtering (efficient)
+gcloud compute instances list --filter="zone:us-central1-a"
+gcloud compute instances list --filter="status=RUNNING"
+gcloud compute instances list --filter="name~^web-.*"
+
+# Multiple conditions
+gcloud compute instances list \
+  --filter="zone:us-central1 AND status=RUNNING"
+
+# Negation
+gcloud compute instances list --filter="NOT status=TERMINATED"
+```
+
+## CI/CD Integration
+
+### GitHub Actions
+```yaml
+name: Deploy to GCP
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - id: auth
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+
+      - name: Deploy
+        run: |
+          gcloud run deploy my-service \
+            --image=gcr.io/${{ secrets.GCP_PROJECT_ID }}/my-image \
+            --region=us-central1
+```
+
+### GitLab CI
+```yaml
+deploy:
+  image: google/cloud-sdk:alpine
+  script:
+    - echo $GCP_SA_KEY | base64 -d > key.json
+    - gcloud auth activate-service-account --key-file=key.json
+    - gcloud config set project $GCP_PROJECT_ID
+    - gcloud app deploy
+  only:
+    - main
+```
+
+## Best Practices
+
+### Security
+- Never commit credentials
+- Use service account impersonation
+- Grant minimal IAM permissions
+- Rotate keys regularly
+
+### Performance
+- Use server-side filtering: `--filter`
+- Limit output: `--limit=10`
+- Project only needed fields: `--format="value(name)"`
+- Batch operations with `--async`
+
+### Maintainability
+- Use named configurations for environments
+- Document commands
+- Use environment variables
+- Implement error handling and retries
+
+## Troubleshooting
+
+```bash
+# Check authentication
+gcloud auth list
+
+# Re-authenticate
+gcloud auth login
+gcloud auth application-default login
+
+# Check IAM permissions
+gcloud projects get-iam-policy PROJECT_ID \
+  --flatten="bindings[].members" \
+  --filter="bindings.members:user@example.com"
+
+# View configuration
+gcloud config list
+
+# Reset configuration
+gcloud config configurations delete default
+gcloud init
+```
+
+## Quick Reference
+
+| Task | Command |
+|------|---------|
+| Initialize | `gcloud init` |
+| Login | `gcloud auth login` |
+| Set project | `gcloud config set project PROJECT_ID` |
+| List resources | `gcloud [SERVICE] list` |
+| Create resource | `gcloud [SERVICE] create RESOURCE` |
+| Delete resource | `gcloud [SERVICE] delete RESOURCE` |
+| Get help | `gcloud [SERVICE] --help` |
+
+## Global Flags
+
+| Flag | Purpose |
+|------|---------|
+| `--project` | Override project |
+| `--format` | Output format (json, yaml, csv) |
+| `--filter` | Server-side filter |
+| `--limit` | Limit results |
+| `--quiet` | Suppress prompts |
+| `--verbosity` | Log level (debug, info, warning, error) |
+| `--async` | Don't wait for operation |
+
+## Resources
+
+- gcloud Reference: https://cloud.google.com/sdk/gcloud/reference
+- Installation: https://cloud.google.com/sdk/docs/install
+- Authentication: https://cloud.google.com/docs/authentication
+- Cheatsheet: https://cloud.google.com/sdk/docs/cheatsheet
