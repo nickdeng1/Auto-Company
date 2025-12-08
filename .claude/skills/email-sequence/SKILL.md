@@ -151,3 +151,156 @@ Key emails:
 ### Onboarding Sequence (Product Users)
 **Length**: 5-7 emails over 14 days
 **Goal**: Activate, drive to aha moment, upgrade
+**Note**: Coordinate with in-app onboarding—email supports, doesn't duplicate
+
+Key emails:
+1. Welcome + first step (immediate)
+2. Getting started help (day 1)
+3. Feature highlight (day 2-3)
+4. Success story (day 4-5)
+5. Check-in (day 7)
+6. Advanced tip (day 10-12)
+7. Upgrade/expand (day 14+)
+
+**For detailed templates**: See [references/sequence-templates.md](references/sequence-templates.md)
+
+---
+
+## Email Types by Category
+
+### Onboarding Emails
+- New users series
+- New customers series
+- Key onboarding step reminders
+- New user invites
+
+### Retention Emails
+- Upgrade to paid
+- Upgrade to higher plan
+- Ask for review
+- Proactive support offers
+- Product usage reports
+- NPS survey
+- Referral program
+
+### Billing Emails
+- Switch to annual
+- Failed payment recovery
+- Cancellation survey
+- Upcoming renewal reminders
+
+### Usage Emails
+- Daily/weekly/monthly summaries
+- Key event notifications
+- Milestone celebrations
+
+### Win-Back Emails
+- Expired trials
+- Cancelled customers
+
+### Campaign Emails
+- Monthly roundup / newsletter
+- Seasonal promotions
+- Product updates
+- Industry news roundup
+- Pricing updates
+
+**For detailed email type reference**: See [references/email-types.md](references/email-types.md)
+
+---
+
+## Email Copy Guidelines
+
+### Structure
+1. **Hook**: First line grabs attention
+2. **Context**: Why this matters to them
+3. **Value**: The useful content
+4. **CTA**: What to do next
+5. **Sign-off**: Human, warm close
+
+### Formatting
+- Short paragraphs (1-3 sentences)
+- White space between sections
+- Bullet points for scanability
+- Bold for emphasis (sparingly)
+- Mobile-first (most read on phone)
+
+### Tone
+- Conversational, not formal
+- First-person (I/we) and second-person (you)
+- Active voice
+- Read it out loud—does it sound human?
+
+### Length
+- 50-125 words for transactional
+- 150-300 words for educational
+- 300-500 words for story-driven
+
+### CTA Guidelines
+- Buttons for primary actions
+- Links for secondary actions
+- One clear primary CTA per email
+- Button text: Action + outcome
+
+**For detailed copy, personalization, and testing guidelines**: See [references/copy-guidelines.md](references/copy-guidelines.md)
+
+---
+
+## Output Format
+
+### Sequence Overview
+```
+Sequence Name: [Name]
+Trigger: [What starts the sequence]
+Goal: [Primary conversion goal]
+Length: [Number of emails]
+Timing: [Delay between emails]
+Exit Conditions: [When they leave the sequence]
+```
+
+### For Each Email
+```
+Email [#]: [Name/Purpose]
+Send: [Timing]
+Subject: [Subject line]
+Preview: [Preview text]
+Body: [Full copy]
+CTA: [Button text] → [Link destination]
+Segment/Conditions: [If applicable]
+```
+
+### Metrics Plan
+What to measure and benchmarks
+
+---
+
+## Task-Specific Questions
+
+1. What triggers entry to this sequence?
+2. What's the primary goal/conversion action?
+3. What do they already know about you?
+4. What other emails are they receiving?
+5. What's your current email performance?
+
+---
+
+## Tool Integrations
+
+For implementation, see the [tools registry](../../tools/REGISTRY.md). Key email tools:
+
+| Tool | Best For | MCP | Guide |
+|------|----------|:---:|-------|
+| **Customer.io** | Behavior-based automation | - | [customer-io.md](../../tools/integrations/customer-io.md) |
+| **Mailchimp** | SMB email marketing | ✓ | [mailchimp.md](../../tools/integrations/mailchimp.md) |
+| **Resend** | Developer-friendly transactional | ✓ | [resend.md](../../tools/integrations/resend.md) |
+| **SendGrid** | Transactional email at scale | - | [sendgrid.md](../../tools/integrations/sendgrid.md) |
+| **Kit** | Creator/newsletter focused | - | [kit.md](../../tools/integrations/kit.md) |
+
+---
+
+## Related Skills
+
+- **onboarding-cro**: For in-app onboarding (email supports this)
+- **copywriting**: For landing pages emails link to
+- **ab-test-setup**: For testing email elements
+- **popup-cro**: For email capture popups
