@@ -98,3 +98,102 @@ Keyword research is the foundation of SEO strategy. Target the wrong keywords an
 ✗ Target: "buy secrets management software now"
   └── Volume: 0/mo
   └── Problem: Not how people search
+
+✗ Targeting only head terms:
+  └── "secrets management" but not
+  └── "secrets management for startups" or
+  └── "secrets management best practices" or
+  └── "secrets management tools comparison"
+```
+
+### Keyword Intent Classification
+
+| Signal | Informational | Commercial | Transactional |
+|--------|---------------|------------|---------------|
+| **Modifiers** | how, what, why, guide | best, top, vs, review | buy, pricing, demo, trial |
+| **SERP type** | Blog posts, wikis | Listicles, comparisons | Product pages, pricing |
+| **User stage** | Awareness | Consideration | Decision |
+| **Content fit** | Educational | Evaluative | Conversion |
+
+### Keyword Opportunity Score
+
+Calculate: `(Volume × Intent Score × Click Rate) / Difficulty`
+
+| Factor | Scoring |
+|--------|---------|
+| **Volume** | Raw number |
+| **Intent Score** | Info=1, Commercial=3, Transactional=5 |
+| **Click Rate** | % of SERPs with organic clicks (check for zero-click) |
+| **Difficulty** | 1-100 from tool |
+
+Higher score = better opportunity.
+
+### Long-Tail Strategy
+
+| Term Type | Example | Characteristics |
+|-----------|---------|-----------------|
+| **Head** | "secrets management" | High volume, high difficulty, broad intent |
+| **Body** | "secrets management for startups" | Medium volume, medium difficulty |
+| **Long-tail** | "how to rotate api keys in kubernetes" | Low volume, low difficulty, specific intent |
+
+**Long-tail advantages:**
+- Easier to rank
+- Higher conversion rate
+- More specific content
+- Builds topical authority for head terms
+
+### Competitor Keyword Gap Analysis
+
+```
+1. Identify 3-5 direct competitors
+
+2. Export their ranking keywords
+
+3. Filter to:
+   └── Keywords you DON'T rank for
+   └── Keywords where they rank higher
+   └── Keywords with volume > 100/mo
+
+4. Categorize gaps:
+   └── Missing topics (need new content)
+   └── Weak coverage (need better content)
+   └── Technical issues (need optimization)
+
+5. Prioritize by opportunity score
+```
+
+### Question Keyword Mining
+
+| Source | How to Access |
+|--------|---------------|
+| **People Also Ask** | Google SERP → expand PAA boxes |
+| **Related Searches** | Bottom of Google SERP |
+| **Answer the Public** | answerthepublic.com |
+| **AlsoAsked** | alsoasked.com |
+| **Reddit/Quora** | Search `site:reddit.com [topic]` |
+| **Customer calls** | Record and transcribe sales/support calls |
+
+### Keyword Research Checklist
+
+- [ ] Identified 5-10 seed keywords from product/customer research
+- [ ] Expanded to 100+ keyword variations using tools
+- [ ] Classified all keywords by intent
+- [ ] Checked SERP for each primary keyword
+- [ ] Identified keyword difficulty and realistic targets
+- [ ] Grouped keywords into topic clusters
+- [ ] Mapped keywords to funnel stages
+- [ ] Found question keywords for each topic
+- [ ] Analyzed competitor keyword gaps
+- [ ] Prioritized by opportunity score
+- [ ] Assigned keywords to content pieces
+
+### Anti-Patterns
+
+- **Volume obsession** — Chasing 50k/mo terms you'll never rank for
+- **Ignoring intent** — Ranking #1 for wrong intent = 90% bounce rate
+- **Keyword hoarding** — Researching 1,000 keywords, executing on 10
+- **Tool over-reliance** — Tools estimate; SERP analysis confirms
+- **Static research** — Search behavior changes; refresh quarterly
+- **Skipping SERP analysis** — Difficulty score means nothing without checking actual results
+- **One keyword per page** — Modern SEO targets topic clusters, not single keywords
+- **Ignoring zero-click** — Some keywords have no click-through opportunity
