@@ -144,3 +144,148 @@ Link Building Specialist
 - Professional communities
 - Industry publications
 
+**What to offer:**
+- Genuinely useful content for their audience
+- Exclusive angles/data
+- Follow their content guidelines
+- Promote the post to your audience
+
+**What to avoid:**
+- Sites that accept any guest post
+- "Write for us" farms
+- Paying for placement
+- Exact-match anchor text links
+
+### Good Guest Post Pitch
+
+```
+Subject: Guest post idea: API security mistakes we see at startups
+
+Hi [Editor name],
+
+I've been reading [Blog] for a while — loved the recent piece
+on [specific article]. Writing to see if you'd be interested
+in a guest post.
+
+Idea: "5 API Security Mistakes We See at Every Series A Startup"
+
+Working with 200+ startups on secrets management, we see the
+same patterns repeatedly. Could share:
+- The 5 most common mistakes (with anonymized examples)
+- Why these happen at the Series A stage specifically
+- Practical fixes that take less than a day
+
+Would be original content, ~1,500 words, with actionable
+takeaways for your developer audience.
+
+Interested?
+
+[Name]
+[Title, Company]
+```
+
+### Resource Link Building
+
+```
+1. Find resource pages
+   └── Google: "[your topic]" + "resources"
+   └── Google: "[your topic]" + "useful links"
+   └── Google: "[your topic]" + "recommended reading"
+
+2. Create link-worthy resource
+   └── More comprehensive than existing options
+   └── Better designed/formatted
+   └── More up-to-date
+   └── Unique angle
+
+3. Reach out to page owners
+   └── Suggest your resource as addition
+   └── Explain why it's valuable for their readers
+   └── Offer to help update their page
+```
+
+### Broken Link Building
+
+```
+1. Find broken links on target sites
+   └── Ahrefs: Site Explorer → Outgoing → Broken links
+   └── Check Screaming Frog crawl results
+   └── Browser extension (Check My Links)
+
+2. Create/identify replacement content
+   └── Your existing content that covers the topic
+   └── Create new content if high-value opportunity
+
+3. Reach out
+   └── "Noticed your link to [resource] is broken"
+   └── "Here's an alternative that covers [topic]"
+   └── Provide value (help them fix their page)
+```
+
+### Link Velocity Guidelines
+
+| Site Stage | Monthly New Referring Domains | Notes |
+|------------|-------------------------------|-------|
+| **New site** | 5-15 | Steady growth, avoid spikes |
+| **Established** | 15-30 | Mix of tactics |
+| **Authority** | 30-50+ | Natural growth + campaigns |
+
+**Red flags:**
+- 0 → 100 links overnight (looks unnatural)
+- All links from same source
+- Links faster than you're creating content
+- Sudden drop (could indicate link removal/penalty)
+
+### Anchor Text Distribution
+
+| Anchor Type | Target % | Example |
+|-------------|----------|---------|
+| **Brand** | 30-40% | "Infisical", "Infisical.com" |
+| **URL** | 10-20% | "infisical.com/blog/post" |
+| **Generic** | 15-25% | "click here", "read more", "this guide" |
+| **Topic/keyword** | 15-25% | "secrets management guide" |
+| **Exact match** | 1-5% | "kubernetes secrets management" |
+
+**Key:** Diverse anchor text looks natural. All exact-match is spam.
+
+### Internal Linking for Link Equity
+
+```
+PageRank flows through internal links:
+
+[High-authority page with backlinks]
+         │
+         ├──────► [Strategic page 1] ─────► [Target page]
+         │                                      ▲
+         └──────► [Strategic page 2] ──────────┘
+
+Strategy:
+- Identify pages with most backlinks (Ahrefs/Moz)
+- Add internal links from those to priority pages
+- Use descriptive anchor text
+- Limit links per page (equity dilutes)
+```
+
+### Link Building Metrics to Track
+
+| Metric | What It Shows | Tool |
+|--------|---------------|------|
+| **Referring domains** | Total linking sites | Ahrefs, Moz |
+| **Domain Rating/Authority** | Overall site strength | Ahrefs (DR), Moz (DA) |
+| **Link velocity** | New links over time | Ahrefs, Majestic |
+| **Anchor text distribution** | Link profile health | Ahrefs |
+| **Lost links** | Churn, issues | Ahrefs, Moz |
+| **Competitor gap** | Opportunities | Ahrefs Link Intersect |
+
+### Anti-Patterns
+
+- **Buying links** — Violates guidelines, risk of penalty
+- **Link exchanges** — "I'll link to you if you link to me" is detectable
+- **PBNs** — Private blog networks are a penalty waiting to happen
+- **Comment spam** — Links in blog comments don't help
+- **Forum signature links** — Waste of time, often nofollowed
+- **Irrelevant links** — Pet blog linking to your SaaS hurts more than helps
+- **Over-optimized anchors** — Too many exact-match keywords is spam signal
+- **Link velocity spikes** — 0 to 500 links overnight is unnatural
+- **Ignoring disavow** — Bad links need to be disavowed
+- **Focusing only on DA** — Relevance matters more than raw authority
