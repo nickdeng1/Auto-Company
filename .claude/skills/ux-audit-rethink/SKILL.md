@@ -314,3 +314,161 @@ For each factor, assess and rate 1-5:
 - Multi-step processes that could be simplified
 - Missing shortcuts or bulk actions
 - Slow loading times
+
+---
+
+#### 3. Engagement ⭐⭐⭐⚪⚪ (3/5)
+
+**Definition**: Is the interface pleasant, satisfying, and enjoyable to use?
+
+**Evaluate:**
+- Aesthetic appeal
+- Emotional response (positive feelings)
+- Desire to return
+- Flow state (immersion)
+- Delight moments
+
+**Qualitative:**
+- Do users enjoy using it?
+- Does it create positive memories?
+- Would they recommend it?
+
+---
+
+#### 4. Error Tolerance ⭐⭐⚪⚪⚪ (2/5)
+
+**Definition**: Can users easily prevent, recognize, and recover from errors?
+
+**Evaluate:**
+- Error prevention (constraints, validation, confirmations)
+- Clear error messages (what happened, why, how to fix)
+- Easy undo/redo
+- Graceful degradation
+- Data loss prevention (auto-save)
+
+**Common Issues:**
+- Generic error messages ("Error 500")
+- No confirmation for destructive actions
+- Can't undo mistakes
+- Data loss on errors
+
+---
+
+#### 5. Ease of Learning ⭐⭐⭐⚪⚪ (3/5)
+
+**Definition**: Can new users quickly learn to use the product without extensive training?
+
+**Evaluate:**
+- Intuitive first use (learnability)
+- Onboarding effectiveness
+- Consistent with conventions
+- Progressive disclosure
+- In-context help
+- Memorability (can returning users remember?)
+
+**Test:**
+- Can a new user complete [key task] without help?
+- How long to become proficient?
+- Do users need documentation?
+
+---
+
+**Usability Characteristics Summary:**
+
+| Characteristic | Rating | Status | Impact |
+|---------------|--------|--------|--------|
+| Effectiveness | 4/5 | ✅ Good | High |
+| Efficiency | 3/5 | ⚠️ Needs work | High |
+| Engagement | 3/5 | ⚠️ Needs work | Medium |
+| Error Tolerance | 2/5 | ❌ Poor | Critical |
+| Ease of Learning | 3/5 | ⚠️ Needs work | High |
+
+**Overall Usability Score**: 15/25 (60%) - **Below target, improvement essential**
+
+**Utility Check**: Are the right features present? (Yes/No/Partial)
+**Usefulness Score**: Utility + Usability = [Assessment]
+
+---
+
+### Step 4: Review 5 Interaction Design Dimensions (30 minutes)
+
+#### 1. Words (Microcopy, Labels, Content)
+
+**Evaluate:**
+- Clear, concise, jargon-free language
+- Consistent terminology
+- User's language (not system language)
+- Helpful instructions and guidance
+- Appropriate tone of voice
+- Error messages understandable
+
+**Examples to Check:**
+- Button labels: "Submit" vs. "Save Changes" vs. "Continue"
+- Form labels: Clear and specific?
+- Error messages: Helpful or cryptic?
+- Empty states: Guiding or confusing?
+
+**Issues:**
+- Technical jargon ("Error: NULL reference exception")
+- Ambiguous labels ("OK", "Submit", "Click here")
+- Inconsistent terminology (Sign In vs. Log In vs. Login)
+- Missing context ("Name" - first? last? full?)
+
+---
+
+#### 2. Visual Representations (Icons, Graphics, Typography)
+
+**Evaluate:**
+- Icons clear and universally understood
+- Visual hierarchy guides attention
+- Typography readable and accessible
+- Images support content (not decorative)
+- Consistent visual language
+- Color communicates meaning
+- Data visualization effective
+
+**Check:**
+- Icon meanings obvious without labels?
+- Visual hierarchy clear?
+- Typography scales well?
+- Graphics enhance understanding?
+
+---
+
+#### 3. Physical Objects/Space (Input Methods, Screen Size)
+
+**Evaluate:**
+- Touch targets appropriate size (44×44px minimum)
+- Gestures intuitive (swipe, pinch, tap)
+- Keyboard navigation smooth
+- Mouse interactions (hover, click) responsive
+- Screen size optimized (mobile, tablet, desktop)
+- Responsive design effective
+
+**Mobile Considerations (Chapter 8 - IxDF):**
+- Small screen optimized
+- One-direction scrolling
+- Simplified navigation
+- Minimal content per screen
+- Reduced text input
+- Stable network handling
+- Integrated experience (uses phone features)
+
+---
+
+#### 4. Time (Animations, Responsiveness, Loading)
+
+**Evaluate:**
+- Loading times acceptable (<3 seconds)
+- Animations smooth and purposeful
+- Transitions guide users
+- Feedback immediate (<100ms)
+- Progress indicators for long operations
+- No unnecessary delays
+- Performance optimized
+
+**Timing Guidelines:**
+- <100ms: Feels instant
+- 100-300ms: Slight delay noticed
+- 300ms-1s: User stays focused
+- 1-10s: Needs progress indicator
