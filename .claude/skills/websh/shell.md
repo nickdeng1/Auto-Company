@@ -278,3 +278,143 @@ cd https://news.ycombinator.com
 | Navigation | `cd`, `back`, `forward`, `follow`, `go` | Maybe (if not cached) |
 | Query | `ls`, `cat`, `grep`, `stat`, `dom`, `source` | No (uses cache) |
 | Search | `find`, `locate`, `tree` | Maybe (find can crawl) |
+| Text | `head`, `tail`, `sort`, `uniq`, `wc`, `cut`, `tr`, `sed` | No |
+| Diff | `diff`, `patch` | Maybe |
+| Monitor | `watch`, `ping`, `traceroute`, `time` | Yes |
+| Jobs | `ps`, `jobs`, `kill`, `wait`, `bg`, `fg` | No |
+| Environment | `env`, `export`, `unset` | No |
+| Auth | `whoami`, `login`, `logout`, `su` | Maybe |
+| Mount | `mount`, `umount`, `df`, `quota` | Maybe |
+| Archive | `tar`, `snapshot`, `wayback` | Maybe |
+| Metadata | `robots`, `sitemap`, `headers`, `cookies` | Maybe |
+| Interaction | `click`, `submit`, `type`, `scroll`, `screenshot` | Maybe |
+| Schedule | `cron`, `at` | No (schedules for later) |
+| Aliases | `alias`, `unalias`, `ln -s` | No |
+| State | `history`, `bookmark`, `bookmarks`, `save` | No |
+
+### 4. Execute and output
+
+Return output in shell format—plain text, one item per line where appropriate, suitable for piping.
+
+---
+
+## The `cd` Command
+
+`cd` is **fully asynchronous**. It should never block. The user gets their prompt back immediately.
+
+### Flow
+
+```
+user: cd https://news.ycombinator.com
+
+websh: news.ycombinator.com> (fetching...)
+
+# User has prompt immediately. Can type next command.
+# Background task handles fetch + extract.
+```
+
+### Implementation
+
+```python
+def cd(url):
+    # 1. Check chroot boundary (instant)
+    if chroot and not url.startswith(chroot):
+        error("outside chroot")
+        return
+
+    # 2. Resolve URL (instant)
+    full_url = resolve(url, session.pwd)
+    slug = url_to_slug(full_url)
+
+    # 3. Update session state (instant) - optimistically set pwd
+    session.pwd = full_url
+    session.pwd_slug = slug
+    session.nav_stack.push(full_url)
+
+    # 4. Check cache
+    if cached(slug) and not force:
+        print(f"{domain(full_url)}> (cached)")
+        return  # Done - already have content
+
+    # 5. Spawn background task for fetch + extract
+    print(f"{domain(full_url)}> (fetching...)")
+
+    Task(
+        description=f"websh: fetch {slug}",
+        prompt=FETCH_AND_EXTRACT_PROMPT.format(
+            url=full_url,
+            slug=slug,
+        ),
+        subagent_type="general-purpose",
+        model="haiku",
+        run_in_background=True
+    )
+
+    # 6. Return immediately - user has prompt
+```
+
+### Background Fetch+Extract Task
+
+The haiku subagent does ALL the work:
+
+````
+You are fetching and extracting a webpage for websh.
+
+URL: {url}
+Slug: {slug}
+
+## Steps
+
+1. Fetch the URL using WebFetch
+2. Write raw HTML to: .websh/cache/{slug}.html
+3. Iteratively extract content to: .websh/cache/{slug}.parsed.md
+4. Update .websh/cache/index.md with the new entry
+
+## Extraction
+
+Do multiple passes to build rich .parsed.md:
+- Pass 1: Title, links (indexed), basic structure
+- Pass 2: Main content, navigation, forms
+- Pass 3: Metadata, patterns, cleanup
+
+## Output format for .parsed.md
+
+```markdown
+# {url}
+
+fetched: {timestamp}
+status: complete
+
+## Summary
+
+{2-3 sentence description}
+
+## Links
+
+[0] Link text → href
+[1] Link text → href
+...
+
+## Content
+
+{main content extracted}
+
+## Structure
+
+{page patterns, selectors}
+```
+
+When done, your work is complete. The user may already be running other commands.
+````
+
+### After Extraction: Eager Crawl
+
+If `EAGER_CRAWL` is enabled (default: true), spawn a crawl agent after the fetch task:
+
+```python
+if env.EAGER_CRAWL:
+    Task(
+        description=f"websh: eager crawl {slug}",
+        prompt=EAGER_CRAWL_PROMPT.format(
+            url=full_url,
+            slug=slug,
