@@ -292,3 +292,149 @@ class APIError extends Error {
     public code: string,
     message: string,
     public details?: unknown
+  ) {
+    super(message);
+  }
+}
+
+// Error handler middleware
+function errorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
+  // Generate request ID
+  const requestId = req.headers['x-request-id'] || crypto.randomUUID();
+  
+  // Log full error internally
+  console.error({
+    requestId,
+    error: err.message,
+    stack: err.stack,
+    url: req.url,
+    method: req.method,
+    userId: req.user?.id
+  });
+  
+  // Send sanitized response
+  if (err instanceof APIError) {
+    return res.status(err.statusCode).json({
+      error: {
+        code: err.code,
+        message: err.message,
+        details: err.details,
+        requestId
+      }
+    });
+  }
+  
+  // Generic error - don't leak details
+  res.status(500).json({
+    error: {
+      code: 'INTERNAL_ERROR',
+      message: 'An unexpected error occurred',
+      requestId
+    }
+  });
+}
+
+app.use(errorHandler);
+```
+
+### Error Information Disclosure
+
+```typescript
+// ❌ Leaks information
+res.status(500).json({
+  error: 'Database connection failed: ECONNREFUSED 10.0.0.1:5432',
+  stack: err.stack
+});
+
+// ❌ Reveals user existence
+res.status(404).json({ error: 'User admin@example.com not found' });
+
+// ✅ Generic error
+res.status(500).json({
+  error: { code: 'INTERNAL_ERROR', message: 'Something went wrong' }
+});
+
+// ✅ Don't reveal user existence
+res.status(401).json({
+  error: { code: 'INVALID_CREDENTIALS', message: 'Invalid email or password' }
+});
+```
+
+---
+
+## Request Size Limits
+
+```typescript
+import express from 'express';
+
+// Global limits
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+
+// Larger limit for specific routes
+app.use('/api/upload', express.json({ limit: '50mb' }));
+
+// File upload limits
+import multer from 'multer';
+
+const upload = multer({
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB
+    files: 5,
+    fields: 10
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+    
+    if (!allowedTypes.includes(file.mimetype)) {
+      cb(new Error('Invalid file type'));
+      return;
+    }
+    
+    cb(null, true);
+  }
+});
+```
+
+---
+
+## API Versioning Security
+
+### Version-Specific Security
+
+```typescript
+// Deprecation headers
+function apiVersion(version: string, deprecated = false) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    res.set('API-Version', version);
+    
+    if (deprecated) {
+      res.set('Deprecation', 'true');
+      res.set('Sunset', '2024-12-31');
+      res.set('Link', '</api/v2/docs>; rel="successor-version"');
+    }
+    
+    next();
+  };
+}
+
+// Block deprecated endpoints
+function blockDeprecated(sunsetDate: Date) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (new Date() > sunsetDate) {
+      return res.status(410).json({
+        error: {
+          code: 'ENDPOINT_REMOVED',
+          message: 'This API version has been removed',
+          migrationGuide: 'https://docs.example.com/api/v2/migration'
+        }
+      });
+    }
+    next();
+  };
+}
+```
+
+---
+
+## Webhook Security
