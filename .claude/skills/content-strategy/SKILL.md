@@ -236,3 +236,121 @@ If user provides survey data, mine for:
 ### 4. Forum Research
 
 Use web search to find content ideas:
+
+**Reddit:** `site:reddit.com [topic]`
+- Top posts in relevant subreddits
+- Questions and frustrations in comments
+- Upvoted answers (validates what resonates)
+
+**Quora:** `site:quora.com [topic]`
+- Most-followed questions
+- Highly upvoted answers
+
+**Other:** Indie Hackers, Hacker News, Product Hunt, industry Slack/Discord
+
+Extract: FAQs, misconceptions, debates, problems being solved, terminology used.
+
+### 5. Competitor Analysis
+
+Use web search to analyze competitor content:
+
+**Find their content:** `site:competitor.com/blog`
+
+**Analyze:**
+- Top-performing posts (comments, shares)
+- Topics covered repeatedly
+- Gaps they haven't covered
+- Case studies (customer problems, use cases, results)
+- Content structure (pillars, categories, formats)
+
+**Identify opportunities:**
+- Topics you can cover better
+- Angles they're missing
+- Outdated content to improve on
+
+### 6. Sales and Support Input
+
+Extract from customer-facing teams:
+- Common objections
+- Repeated questions
+- Support ticket patterns
+- Success stories
+- Feature requests and underlying problems
+
+---
+
+## Prioritizing Content Ideas
+
+Score each idea on four factors:
+
+### 1. Customer Impact (40%)
+- How frequently did this topic come up in research?
+- What percentage of customers face this challenge?
+- How emotionally charged was this pain point?
+- What's the potential LTV of customers with this need?
+
+### 2. Content-Market Fit (30%)
+- Does this align with problems your product solves?
+- Can you offer unique insights from customer research?
+- Do you have customer stories to support this?
+- Will this naturally lead to product interest?
+
+### 3. Search Potential (20%)
+- What's the monthly search volume?
+- How competitive is this topic?
+- Are there related long-tail opportunities?
+- Is search interest growing or declining?
+
+### 4. Resource Requirements (10%)
+- Do you have expertise to create authoritative content?
+- What additional research is needed?
+- What assets (graphics, data, examples) will you need?
+
+### Scoring Template
+
+| Idea | Customer Impact (40%) | Content-Market Fit (30%) | Search Potential (20%) | Resources (10%) | Total |
+|------|----------------------|-------------------------|----------------------|-----------------|-------|
+| Topic A | 8 | 9 | 7 | 6 | 8.0 |
+| Topic B | 6 | 7 | 9 | 8 | 7.1 |
+
+---
+
+## Output Format
+
+When creating a content strategy, provide:
+
+### 1. Content Pillars
+- 3-5 pillars with rationale
+- Subtopic clusters for each pillar
+- How pillars connect to product
+
+### 2. Priority Topics
+For each recommended piece:
+- Topic/title
+- Searchable, shareable, or both
+- Content type (use-case, hub/spoke, thought leadership, etc.)
+- Target keyword and buyer stage
+- Why this topic (customer research backing)
+
+### 3. Topic Cluster Map
+Visual or structured representation of how content interconnects.
+
+---
+
+## Task-Specific Questions
+
+1. What patterns emerge from your last 10 customer conversations?
+2. What questions keep coming up in sales calls?
+3. Where are competitors' content efforts falling short?
+4. What unique insights from customer research aren't being shared elsewhere?
+5. Which existing content drives the most conversions, and why?
+
+---
+
+## Related Skills
+
+- **copywriting**: For writing individual content pieces
+- **seo-audit**: For technical SEO and on-page optimization
+- **programmatic-seo**: For scaled content generation
+- **email-sequence**: For email-based content
+- **social-content**: For social media content
