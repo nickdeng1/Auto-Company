@@ -249,3 +249,128 @@ Based on missing info: [High/Medium/Low]
 
 ### When
 - Recommended: 3-month transition
+  - Month 1: Pilot
+  - Month 2: Expand
+  - Month 3: Full rollout
+✅ Clear
+
+### Where
+- Applicable: Knowledge work
+- Not suitable: Manufacturing, service industries
+- Tools: Zoom, Slack, Asana
+✅ Clear boundaries
+
+### How
+1. Establish remote work policies
+2. Configure technical infrastructure
+3. Train managers and employees
+4. Build virtual collaboration norms
+5. Regular evaluation and adjustment
+✅ Clear steps
+
+### How Much
+- Tool costs: $50/person/month
+- Training: 40 hours
+- ROI: Office costs ↓50%
+⚠️  Missing: Transition period productivity drop costs
+
+## Gap Analysis
+
+Missing critical information:
+1. Why - Why not consider hybrid model
+2. Who - How to handle change resisters
+3. How much - Transition period hidden costs
+
+Risk:
+- Medium risk: 80% information complete
+- Need supplement: Change management and hidden costs
+
+Recommendations:
+1. Research hybrid work models
+2. Create change communication plan
+3. Budget 15-20% for transition productivity dip
+```
+
+## Integration with Other Frameworks
+
+### + Critical Thinking
+```
+5W2H → Identify missing information
+Critical Thinking → Evaluate quality of existing information
+```
+
+### + SCQA
+```
+SCQA → Understand problem framework
+5W2H → Analyze solution completeness
+```
+
+### + Inversion
+```
+5W2H → Forward analysis of plan
+Inversion → For each W/H, ask "what if it's missing?"
+```
+
+## Advanced Techniques
+
+### 1. Prioritized 5W2H
+
+Not all 7 questions are equally important—adjust by article type:
+
+```markdown
+Strategy articles: Why (40%) > What (30%) > How (20%) > Others
+How-to articles: How (40%) > What (25%) > How much (20%) > Others
+Analysis articles: What (30%) > Why (30%) > Who (20%) > Others
+```
+
+### 2. Iterative 5W2H
+
+```markdown
+Round 1: Quick scan of all 7 questions (15 min)
+Round 2: Deep dive on 2-3 most lacking (30 min)
+Round 3: Cross-validate answer consistency (15 min)
+```
+
+### 3. Extended 5W2H (+ 2H)
+
+Add two more Hows:
+- **How to measure?** (metrics)
+- **How to sustain?** (maintenance)
+
+## Common Pitfalls
+
+### ❌ Surface-Level Analysis
+- Wrong: Mechanically answer 7 questions without depth
+- Right: Dig 2-3 levels deep on each question
+
+### ❌ Ignoring Gaps
+- Wrong: Only analyze what article provides
+- Right: Explicitly note what article doesn't answer
+
+### ❌ Siloed Thinking
+- Wrong: Analyze 7 questions independently
+- Right: Look for consistency and contradictions across answers
+
+## Practice Tips
+
+1. **Print Checklist**: Prepare standard 5W2H template
+2. **Timed Drills**: Complete quick analysis in 15 minutes
+3. **Reverse Validation**: Use analysis to reconstruct article—is it complete?
+4. **Comparative Application**: Compare 5W2H across multiple articles on same topic
+
+## Summary
+
+5W2H is:
+- ✅ **Completeness Checker**: Ensures no information omissions
+- ✅ **Quick Understanding Framework**: Systematically captures essence
+- ✅ **Communication Bridge**: Standardized analysis language
+
+Best for:
+- 📋 Project plan evaluation
+- 📊 Business proposal analysis
+- 📝 Operational guide comprehension
+- 🔍 Information gap identification
+
+---
+
+**Remember**: 5W2H's value isn't just answering these 7 questions, but discovering which questions *aren't* answered—and why.
