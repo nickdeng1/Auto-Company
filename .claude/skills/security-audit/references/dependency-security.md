@@ -317,3 +317,162 @@ updates:
 ## Renovate Configuration
 
 Create `renovate.json`:
+
+```json
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":semanticCommits",
+    "security:openssf-scorecard"
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["security"]
+  },
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["patch", "minor"],
+      "automerge": true
+    },
+    {
+      "matchDepTypes": ["devDependencies"],
+      "automerge": true
+    },
+    {
+      "matchPackagePatterns": ["*"],
+      "matchUpdateTypes": ["major"],
+      "labels": ["major-update"]
+    }
+  ],
+  "schedule": ["before 9am on monday"]
+}
+```
+
+---
+
+## CVE Tracking
+
+### Monitoring Sources
+
+| Source | URL | Coverage |
+|--------|-----|----------|
+| NVD | nvd.nist.gov | All CVEs |
+| GitHub Advisory | github.com/advisories | npm, pip, etc. |
+| Snyk DB | snyk.io/vuln | npm, pip, etc. |
+| npm Registry | npmjs.com | npm packages |
+| PyPI | pypi.org/security | Python packages |
+
+### CVE Response Process
+
+```
+1. Detection (automated)
+   ├── Snyk alert
+   ├── Dependabot PR
+   └── npm audit CI failure
+
+2. Triage (within 24h)
+   ├── Confirm exploitability
+   ├── Check if affected code path is used
+   └── Determine actual severity
+
+3. Response (based on severity)
+   ├── Critical: Patch within 24-48h
+   ├── High: Patch within 1 week
+   ├── Medium: Patch within sprint
+   └── Low: Track in backlog
+
+4. Verification
+   ├── Re-run security scans
+   ├── Test functionality
+   └── Deploy
+
+5. Post-mortem (critical only)
+   └── Document lessons learned
+```
+
+---
+
+## Lock File Best Practices
+
+### npm (package-lock.json)
+
+```bash
+# Always commit lock file
+git add package-lock.json
+
+# Use ci for deterministic installs
+npm ci  # Not npm install
+
+# Verify integrity
+npm ci --ignore-scripts
+```
+
+### Yarn (yarn.lock)
+
+```bash
+# Commit lock file
+git add yarn.lock
+
+# Deterministic install
+yarn install --frozen-lockfile
+
+# Check for issues
+yarn audit
+```
+
+### pnpm (pnpm-lock.yaml)
+
+```bash
+# Commit lock file
+git add pnpm-lock.yaml
+
+# Frozen install
+pnpm install --frozen-lockfile
+
+# Security audit
+pnpm audit
+```
+
+---
+
+## Supply Chain Security
+
+### Package Provenance
+
+Check npm package signatures:
+
+```bash
+# Enable signature verification
+npm config set package-lock-only true
+npm config set audit-level moderate
+
+# Check provenance
+npm audit signatures
+```
+
+### Scorecard Analysis
+
+```bash
+# Install scorecard
+brew install scorecard
+
+# Check a package
+scorecard --repo=github.com/lodash/lodash
+
+# Check npm package
+scorecard --npm=lodash
+```
+
+### SBOM Generation
+
+```bash
+# Generate with npm
+npm sbom --sbom-format=cyclonedx
+
+# Generate with syft
+syft . -o cyclonedx-json > sbom.json
+
+# Generate with trivy
+trivy fs . --format cyclonedx --output sbom.json
+```
