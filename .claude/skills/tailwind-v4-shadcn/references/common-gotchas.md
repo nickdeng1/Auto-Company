@@ -311,3 +311,159 @@ npm install @tailwindcss/vite
 
 ### 14. Missing Dependencies
 
+❌ **WRONG:**
+```json
+{
+  "dependencies": {
+    "tailwindcss": "^4.1.0"
+    // Missing @tailwindcss/vite
+  }
+}
+```
+
+✅ **CORRECT:**
+```json
+{
+  "dependencies": {
+    "tailwindcss": "^4.1.0",
+    "@tailwindcss/vite": "^4.1.0",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^3.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0"
+  }
+}
+```
+
+---
+
+### 17. tw-animate-css Import Error (REAL-WORLD ISSUE)
+
+❌ **WRONG:**
+```bash
+npm install tailwindcss-animate  # Deprecated package
+```
+
+```css
+@import "tw-animate-css";  # Package doesn't exist in v4
+```
+
+✅ **CORRECT:**
+```bash
+# Don't install tailwindcss-animate at all
+# Use native CSS animations or @tailwindcss/motion
+```
+
+**Why:**
+- `tailwindcss-animate` is deprecated in Tailwind v4
+- Causes import errors during build
+- shadcn/ui docs may still reference it (outdated)
+- The skill handles animations differently in v4
+
+**Impact:** Build failure, requires manual CSS file cleanup
+
+---
+
+### 18. Duplicate @layer base After shadcn init (REAL-WORLD ISSUE)
+
+❌ **WRONG:**
+```css
+/* After running shadcn init, you might have: */
+@layer base {
+  body {
+    background-color: var(--background);
+  }
+}
+
+@layer base {  /* ← Duplicate added by shadcn init */
+  * {
+    border-color: hsl(var(--border));
+  }
+}
+```
+
+✅ **CORRECT:**
+```css
+/* Merge into single @layer base block */
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+  }
+}
+```
+
+**Why:**
+- `shadcn init` adds its own `@layer base` block
+- Results in duplicate layer declarations
+- Can cause unexpected CSS priority issues
+- Easy to miss during setup
+
+**Prevention:**
+- Check `src/index.css` immediately after running `shadcn init`
+- Merge any duplicate `@layer base` blocks
+- Keep only one base layer section
+
+**Impact:** CSS priority issues, harder to debug styling problems
+
+---
+
+## Testing Gotchas
+
+### 15. Not Testing Both Themes
+
+❌ **WRONG:**
+Only testing in light mode
+
+✅ **CORRECT:**
+Test in:
+- Light mode
+- Dark mode
+- System mode
+- Both initial load and toggle
+
+---
+
+### 16. Not Checking Contrast
+
+❌ **WRONG:**
+Colors look good but fail WCAG
+
+✅ **CORRECT:**
+- Use browser DevTools Lighthouse
+- Check contrast ratios (4.5:1 minimum)
+- Test with actual users
+
+---
+
+## Quick Diagnosis
+
+**Symptoms → Likely Cause:**
+
+| Symptom | Likely Cause |
+|---------|-------------|
+| `bg-primary` doesn't work | Missing `@theme inline` mapping |
+| Colors all black/white | Double `hsl()` wrapping |
+| Dark mode not switching | Missing ThemeProvider |
+| Build fails | `tailwind.config.ts` exists with theme config |
+| Text invisible | Wrong contrast colors |
+| `@/` imports fail | Missing path aliases in tsconfig |
+
+---
+
+## Prevention Checklist
+
+Before deploying:
+- [ ] No `tailwind.config.ts` file (or it's empty)
+- [ ] `components.json` has `"config": ""`
+- [ ] All colors have `hsl()` wrapper in `:root`
+- [ ] `@theme inline` maps all variables
+- [ ] `@layer base` doesn't wrap `:root`
+- [ ] Theme provider wraps app
+- [ ] Tested in both light and dark modes
+- [ ] All text has sufficient contrast
