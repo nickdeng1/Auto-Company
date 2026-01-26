@@ -217,3 +217,112 @@ AI 团队全自主运行，但你可以随时介入：
 ## 安全红线
 
 写死在 `CLAUDE.md`，对所有 Agent 强制生效：
+
+- 不得删除 GitHub 仓库（`gh repo delete`）
+- 不得删除 Cloudflare 项目（`wrangler delete`）
+- 不得删除系统文件（`~/.ssh/`、`~/.config/` 等）
+- 不得进行非法活动
+- 不得泄露凭证到公开仓库
+- 不得 force push 到 main/master
+- 所有新项目必须在 `projects/` 目录下创建
+
+## 配置
+
+环境变量覆盖：
+
+```bash
+MODEL=gpt-5.3-codex make start             # 可选：临时覆盖模型
+LOOP_INTERVAL=60 make start                # 60 秒间隔（默认 30）
+CYCLE_TIMEOUT_SECONDS=3600 make start      # 单轮超时 1 小时（默认 1800）
+MAX_CONSECUTIVE_ERRORS=3 make start        # 熔断阈值（默认 5）
+CODEX_SANDBOX_MODE=workspace-write make start  # 可选：覆盖 codex 沙箱模式
+```
+
+## 项目结构
+
+```
+auto-company/
+├── CLAUDE.md              # 公司章程（使命 + 安全红线 + 团队 + 流程）
+├── PROMPT.md              # 每轮工作指令（收敛规则）
+├── Makefile               # 常用命令
+├── INDEX.md               # clone_win 索引与脚本职责表
+├── scripts/
+│   ├── core/              # 主循环与核心控制实现（auto-loop/monitor/stop）
+│   ├── windows/           # Windows 入口/守护/自启实现
+│   ├── wsl/               # WSL systemd --user 守护实现
+│   └── macos/             # macOS launchd 守护实现
+├── memories/
+│   └── consensus.md       # 共识记忆（跨周期接力棒）
+├── docs/                  # Agent 产出（14 个目录 + Windows 指南）
+├── projects/              # 所有新建项目的工作空间
+├── logs/                  # 循环日志
+└── .claude/
+    ├── agents/            # 14 个 Agent 定义（专家人格）
+    ├── skills/            # 30+ 技能（调研、财务、营销……）
+    └── settings.json      # 权限 + Agent Teams 开关
+```
+
+## 依赖
+
+| 依赖 | 说明 |
+|------|------|
+| **[Codex CLI](https://www.npmjs.com/package/@openai/codex)** | 必须安装并登录 |
+| **macOS 或 Windows + WSL2 (Ubuntu)** | macOS 支持 launchd；Windows 走 WSL 执行内核 |
+| `node` | Codex 运行时 |
+| `make` | 启停与监控命令入口（WSL/macOS） |
+| `jq` | 推荐，辅助处理日志 |
+| `gh` | 可选，GitHub CLI |
+| `wrangler` | 可选，Cloudflare CLI |
+
+## 常见问题
+
+### 1) WSL 跑 `.sh` 报 `^M` / `bad interpreter`
+
+- 原因：Windows CRLF 换行导致 Bash 识别失败
+- 处理：
+  - 保持仓库 `.gitattributes` 为 LF 规则
+  - 在仓库执行 `git config core.autocrlf false && git config core.eol lf`
+
+### 2) WSL 报 `codex: node not found`
+
+- 原因：只在 Windows 安装了 Codex/Node，WSL 环境缺失
+- 处理：在 WSL 内安装 `node` 与 `@openai/codex`
+
+### 3) 在 WSL 执行 `make install` 失败
+
+- 原因：WSL 当前会话没有可用的 `systemctl --user`
+- 处理：
+  - 确认 WSL 已启用 systemd
+  - 执行 `systemctl --user --version`
+  - 若仍失败，重新登录 WSL 会话后重试
+
+### 4) `clone/` 在 WSL 下显示大量 Git 改动
+
+- 原因：`clone/` 是留档目录，可能受 Windows CRLF 策略影响，WSL Git 会显示为改动。
+- 可否忽略：可以。前提是你不在 `clone/` 提交。
+- 要求：
+  - 开发与提交只在 `clone_win/`。
+  - `clone/` 仅用于留档对照。
+
+## ⚠️ 免责声明
+
+这是一个**实验项目**：
+
+- **守护进程在 macOS/WSL 均可用** — macOS 依赖 launchd，WSL 依赖 systemd --user
+- **Windows 入口需要 WSL** — PowerShell 只做控制层
+- **还在测试中** — 能跑，但不保证稳定
+- **会花钱** — 每个周期消耗模型额度
+- **完全自主** — AI 团队自己做决策，不会问你。请认真设置 `CLAUDE.md` 中的安全红线
+- **无担保** — AI 可能会构建你意想不到的东西，定期检查 `docs/` 和 `projects/`
+
+建议先用 `make start`（前台）观察行为，再启用守护模式（macOS/WSL：`make install`，Windows：`.\scripts\windows\start-win.ps1`）。
+
+## 致谢
+
+- [continuous-claude](https://github.com/AnandChowdhary/continuous-claude) — 跨会话共享笔记
+- [ralph-claude-code](https://github.com/frankbria/ralph-claude-code) — 退出信号拦截
+- [claude-auto-resume](https://github.com/terryso/claude-auto-resume) — 用量限制恢复
+
+## License
+
+MIT
