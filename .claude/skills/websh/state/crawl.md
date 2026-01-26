@@ -296,3 +296,152 @@ Current crawl:
   Queued: 42 URLs for Layer 2
 
 Recent:
+  [✓] news-ycombinator-com-item-id-41234567 (12 links)
+  [✓] news-ycombinator-com-item-id-41234568 (8 links)
+  [→] news-ycombinator-com-item-id-41234569 (fetching...)
+```
+
+---
+
+## Integration with cd
+
+The `cd` command triggers eager crawl after extraction begins:
+
+```python
+def cd(url):
+    # ... existing cd logic (fetch + extract) ...
+
+    # After spawning extract task, also spawn crawl if enabled
+    if env.EAGER_CRAWL:
+        # Wait briefly for Pass 1 to complete, then crawl
+        Task(
+            description=f"websh: eager crawl {slug}",
+            prompt=EAGER_CRAWL_PROMPT.format(
+                url=full_url,
+                slug=slug,
+                parsed_path=f".websh/cache/{slug}.parsed.md",
+                depth=env.CRAWL_DEPTH,
+                same_domain=env.CRAWL_SAME_DOMAIN,
+                max_per_page=env.CRAWL_MAX_PER_PAGE,
+                max_concurrent=env.CRAWL_MAX_CONCURRENT,
+                delay_ms=env.CRAWL_DELAY_MS,
+            ),
+            subagent_type="general-purpose",
+            model="haiku",
+            run_in_background=True
+        )
+```
+
+The crawl agent waits for links to be available, then starts prefetching.
+
+---
+
+## Performance Considerations
+
+### Why Eager Crawl?
+
+| Without eager crawl | With eager crawl |
+|---------------------|------------------|
+| `follow 3` → wait for fetch | `follow 3` → instant (cached) |
+| `back` → might need refetch | `back` → instant (cached) |
+| Exploring feels slow | Exploring feels instant |
+
+### Cost/Benefit
+
+| Pros | Cons |
+|------|------|
+| Navigation feels instant | Uses more bandwidth |
+| Content ready when needed | More disk space for cache |
+| Natural browsing flow | May fetch pages never visited |
+| Works offline for cached pages | Background CPU usage |
+
+### When to Disable
+
+```
+prefetch off
+```
+
+Disable eager crawl when:
+- On metered connection
+- Crawling large/slow sites
+- Disk space constrained
+- Only visiting one page
+
+---
+
+## Example Session
+
+```
+~> cd https://news.ycombinator.com
+
+news.ycombinator.com> (fetching...)
+
+news.ycombinator.com> prefetch
+Eager crawl: enabled
+Current crawl:
+  Origin: https://news.ycombinator.com
+  Progress: Waiting for extraction...
+
+news.ycombinator.com> ls | head 5
+[0] Show HN: I built a tool for...
+[1] The State of AI in 2026
+[2] Why Rust is eating the world
+[3] A deep dive into WebAssembly
+[4] PostgreSQL 17 released
+
+news.ycombinator.com> prefetch
+Current crawl:
+  Origin: https://news.ycombinator.com
+  Progress: Layer 1 - 8/20 complete
+  [✓] .../item?id=41234567
+  [✓] .../item?id=41234568
+  [→] .../item?id=41234569 (fetching...)
+  ...
+
+news.ycombinator.com> follow 1
+
+news.ycombinator.com/item> (cached)    # Instant! Already prefetched.
+
+news.ycombinator.com/item> cat .title
+The State of AI in 2026
+
+news.ycombinator.com/item> back
+
+news.ycombinator.com> (cached)         # Also instant
+```
+
+---
+
+## robots.txt Respect
+
+Before crawling, check robots.txt:
+
+```python
+def should_crawl(url, domain):
+    robots = get_robots(domain)  # cached
+    return robots.can_fetch("websh/1.0", url)
+```
+
+If disallowed, skip the URL and log:
+
+```markdown
+## Skipped
+
+| URL | Reason |
+|-----|--------|
+| https://example.com/private | disallowed by robots.txt |
+```
+
+---
+
+## Cancellation
+
+User can stop crawl at any time:
+
+```
+prefetch stop
+# or
+kill %crawl
+```
+
+This cancels pending fetches but keeps already-cached content.
