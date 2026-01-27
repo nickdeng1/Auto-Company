@@ -310,3 +310,159 @@ extract_cycle_metadata() {
 mkdir -p "$LOG_DIR" "$PROJECT_DIR/memories"
 
 # Clean up stale stop file from previous run
+rm -f "$PROJECT_DIR/.auto-loop-stop"
+
+# Check for existing instance
+if [ -f "$PID_FILE" ]; then
+    existing_pid=$(cat "$PID_FILE")
+    if kill -0 "$existing_pid" 2>/dev/null; then
+        echo "Auto loop already running (PID $existing_pid). Stop it first with ./stop-loop.sh"
+        exit 1
+    fi
+fi
+
+# Check dependencies
+if ! RESOLVED_CODEX_BIN="$(resolve_codex_bin)"; then
+    echo "Error: Codex CLI not found. Install Codex in WSL and verify with 'codex --version'."
+    exit 1
+fi
+
+if [ ! -f "$PROMPT_FILE" ]; then
+    echo "Error: PROMPT.md not found at $PROMPT_FILE"
+    exit 1
+fi
+
+# Write PID file
+echo $$ > "$PID_FILE"
+
+# Trap signals for graceful shutdown
+trap cleanup SIGTERM SIGINT SIGHUP
+
+# Initialize counters
+loop_count=0
+error_count=0
+
+log "=== Auto Company Loop Started (PID $$) ==="
+log "Project: $PROJECT_DIR"
+log "Engine: codex | Model: $MODEL_LABEL | Sandbox: $CODEX_SANDBOX_MODE"
+log "Codex bin: $RESOLVED_CODEX_BIN"
+codex_version=$("$RESOLVED_CODEX_BIN" --version 2>/dev/null | head -n1 || true)
+case "$RESOLVED_CODEX_BIN" in
+    /mnt/c/*)
+        log "Warning: Codex binary resolves to Windows-mounted path. Prefer WSL-local install for stability."
+        ;;
+esac
+if [ -n "$codex_version" ]; then
+    log "Codex version: $codex_version"
+fi
+log "Interval: ${LOOP_INTERVAL}s | Timeout: ${CYCLE_TIMEOUT_SECONDS}s | Breaker: ${MAX_CONSECUTIVE_ERRORS} errors"
+
+# === Main Loop ===
+
+while true; do
+    # Check for stop request
+    if check_stop_requested; then
+        log "Stop requested. Shutting down gracefully."
+        cleanup
+    fi
+
+    loop_count=$((loop_count + 1))
+    cycle_log="$LOG_DIR/cycle-$(printf '%04d' "$loop_count")-$(date '+%Y%m%d-%H%M%S').log"
+
+    log_cycle "$loop_count" "START" "Beginning work cycle"
+    save_state "running"
+
+    # Log rotation
+    rotate_logs
+
+    # Backup consensus before cycle
+    backup_consensus
+
+    # Build prompt with consensus pre-injected
+    PROMPT=$(cat "$PROMPT_FILE")
+    CONSENSUS=$(cat "$CONSENSUS_FILE" 2>/dev/null || echo "No consensus file found. This is the very first cycle.")
+    FULL_PROMPT="$PROMPT
+
+---
+
+## Runtime Guardrails (must follow)
+
+1. Early in the cycle, create or update \`memories/consensus.md\` with the required section skeleton.
+2. If work scope is large, persist partial decisions to \`memories/consensus.md\` before deep dives.
+3. Prefer shipping one completed milestone over broad parallel exploration.
+
+---
+
+## Current Consensus (pre-loaded, do NOT re-read this file)
+
+$CONSENSUS
+
+---
+
+This is Cycle #$loop_count. Act decisively."
+
+    # Run Codex in headless mode with per-cycle timeout
+    run_codex_cycle "$FULL_PROMPT"
+
+    # Save full output to cycle log
+    echo "$OUTPUT" > "$cycle_log"
+
+    # Extract result fields for status classification
+    extract_cycle_metadata
+
+    cycle_failed_reason=""
+    cycle_soft_timeout=0
+    if [ "$CYCLE_TIMED_OUT" -eq 1 ]; then
+        if validate_consensus && consensus_changed_since_backup; then
+            cycle_soft_timeout=1
+        else
+            cycle_failed_reason="Timed out after ${CYCLE_TIMEOUT_SECONDS}s"
+        fi
+    elif [ "$EXIT_CODE" -ne 0 ]; then
+        cycle_failed_reason="Exit code $EXIT_CODE"
+    elif ! validate_consensus; then
+        cycle_failed_reason="consensus.md validation failed after cycle"
+    fi
+
+    if [ "$cycle_soft_timeout" -eq 1 ]; then
+        log_cycle "$loop_count" "OK" "Timed out after ${CYCLE_TIMEOUT_SECONDS}s but consensus was updated; keeping progress (cost: ${CYCLE_COST}, subtype: ${CYCLE_SUBTYPE})"
+        if [ -n "$RESULT_TEXT" ]; then
+            log_cycle "$loop_count" "SUMMARY" "$(echo "$RESULT_TEXT" | head -c 300)"
+        fi
+        error_count=0
+    elif [ -z "$cycle_failed_reason" ]; then
+        log_cycle "$loop_count" "OK" "Completed (cost: ${CYCLE_COST}, subtype: ${CYCLE_SUBTYPE})"
+        if [ -n "$RESULT_TEXT" ]; then
+            log_cycle "$loop_count" "SUMMARY" "$(echo "$RESULT_TEXT" | head -c 300)"
+        fi
+        error_count=0
+    else
+        error_count=$((error_count + 1))
+        log_cycle "$loop_count" "FAIL" "$cycle_failed_reason (cost: ${CYCLE_COST}, subtype: ${CYCLE_SUBTYPE}, errors: $error_count/$MAX_CONSECUTIVE_ERRORS)"
+
+        # Restore consensus on hard failure
+        restore_consensus
+
+        # Check for usage limit
+        if check_usage_limit "$OUTPUT"; then
+            log_cycle "$loop_count" "LIMIT" "API usage limit detected. Waiting ${LIMIT_WAIT_SECONDS}s..."
+            save_state "waiting_limit"
+            sleep "$LIMIT_WAIT_SECONDS"
+            error_count=0
+            continue
+        fi
+
+        # Circuit breaker
+        if [ "$error_count" -ge "$MAX_CONSECUTIVE_ERRORS" ]; then
+            log_cycle "$loop_count" "BREAKER" "Circuit breaker tripped! Cooling down ${COOLDOWN_SECONDS}s..."
+            save_state "circuit_break"
+            sleep "$COOLDOWN_SECONDS"
+            error_count=0
+            log "Circuit breaker reset. Resuming..."
+        fi
+    fi
+
+    save_state "idle"
+    log_cycle "$loop_count" "WAIT" "Sleeping ${LOOP_INTERVAL}s before next cycle..."
+    sleep "$LOOP_INTERVAL"
+done
