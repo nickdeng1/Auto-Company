@@ -433,3 +433,148 @@ async function useRecoveryCode(userId: string, code: string): Promise<boolean> {
 ---
 
 ## Security Controls
+
+### Account Lockout
+
+```typescript
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_DURATION = 15 * 60 * 1000; // 15 minutes
+
+async function recordLoginAttempt(email: string, success: boolean): Promise<void> {
+  const key = `login_attempts:${email}`;
+  
+  if (success) {
+    await redis.del(key);
+    return;
+  }
+  
+  const attempts = await redis.incr(key);
+  
+  if (attempts === 1) {
+    await redis.expire(key, LOCKOUT_DURATION / 1000);
+  }
+}
+
+async function isAccountLocked(email: string): Promise<boolean> {
+  const attempts = await redis.get(`login_attempts:${email}`);
+  return parseInt(attempts || '0') >= MAX_ATTEMPTS;
+}
+
+// Middleware
+async function checkAccountLock(req: Request, res: Response, next: NextFunction) {
+  const { email } = req.body;
+  
+  if (await isAccountLocked(email)) {
+    return res.status(429).json({
+      error: 'Account temporarily locked',
+      retryAfter: await redis.ttl(`login_attempts:${email}`)
+    });
+  }
+  
+  next();
+}
+```
+
+### Password Reset Security
+
+```typescript
+async function requestPasswordReset(email: string): Promise<void> {
+  const user = await User.findByEmail(email);
+  
+  // Don't reveal if email exists
+  if (!user) {
+    // Still "process" to prevent timing attacks
+    await new Promise(r => setTimeout(r, 100 + Math.random() * 100));
+    return;
+  }
+  
+  // Generate secure token
+  const token = crypto.randomBytes(32).toString('hex');
+  const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+  
+  await PasswordReset.create({
+    userId: user.id,
+    tokenHash,
+    expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
+    used: false
+  });
+  
+  // Send email with token (not hash)
+  await sendPasswordResetEmail(email, token);
+}
+
+async function resetPassword(token: string, newPassword: string): Promise<void> {
+  const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+  
+  const reset = await PasswordReset.findOne({
+    tokenHash,
+    used: false,
+    expiresAt: { $gt: new Date() }
+  });
+  
+  if (!reset) {
+    throw new Error('Invalid or expired reset token');
+  }
+  
+  // Mark token as used (single use)
+  reset.used = true;
+  await reset.save();
+  
+  // Update password
+  const hash = await hashPassword(newPassword);
+  await User.update(reset.userId, { passwordHash: hash });
+  
+  // Invalidate all sessions
+  await Session.deleteMany({ userId: reset.userId });
+}
+```
+
+---
+
+## OAuth/OIDC Integration
+
+### State Parameter (CSRF Prevention)
+
+```typescript
+async function initiateOAuth(req: Request, res: Response) {
+  const state = crypto.randomBytes(32).toString('hex');
+  
+  // Store state in session
+  req.session.oauthState = state;
+  req.session.oauthReturnTo = req.query.returnTo || '/';
+  
+  const authUrl = new URL('https://provider.com/oauth/authorize');
+  authUrl.searchParams.set('client_id', CLIENT_ID);
+  authUrl.searchParams.set('redirect_uri', REDIRECT_URI);
+  authUrl.searchParams.set('response_type', 'code');
+  authUrl.searchParams.set('scope', 'openid email profile');
+  authUrl.searchParams.set('state', state);
+  
+  res.redirect(authUrl.toString());
+}
+
+async function handleOAuthCallback(req: Request, res: Response) {
+  const { code, state } = req.query;
+  
+  // Verify state
+  if (state !== req.session.oauthState) {
+    return res.status(403).json({ error: 'Invalid state parameter' });
+  }
+  
+  delete req.session.oauthState;
+  
+  // Exchange code for tokens
+  const tokens = await exchangeCode(code as string);
+  
+  // Verify ID token
+  const claims = await verifyIdToken(tokens.id_token);
+  
+  // Create or update user
+  const user = await upsertOAuthUser(claims);
+  
+  // Create session
+  req.session.userId = user.id;
+  
+  res.redirect(req.session.oauthReturnTo || '/');
+}
+```
