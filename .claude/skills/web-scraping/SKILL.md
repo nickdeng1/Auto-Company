@@ -462,3 +462,157 @@ from pathlib import Path
 
 class InstagramScraper:
     def __init__(self, username: str = None, session_file: str = None):
+        self.loader = instaloader.Instaloader(
+            download_videos=True,
+            download_video_thumbnails=False,
+            download_geotags=False,
+            download_comments=False,
+            save_metadata=True,
+            compress_json=False,
+        )
+
+        if session_file and Path(session_file).exists():
+            self.loader.load_session_from_file(username, session_file)
+
+    def get_profile_posts(self, username: str, limit: int = 50) -> list[dict]:
+        """Get recent posts from a profile."""
+        profile = instaloader.Profile.from_username(self.loader.context, username)
+        posts = []
+
+        for i, post in enumerate(profile.get_posts()):
+            if i >= limit:
+                break
+
+            posts.append({
+                'shortcode': post.shortcode,
+                'url': f'https://instagram.com/p/{post.shortcode}/',
+                'caption': post.caption,
+                'timestamp': post.date_utc.isoformat(),
+                'likes': post.likes,
+                'comments': post.comments,
+                'is_video': post.is_video,
+                'video_url': post.video_url if post.is_video else None,
+            })
+
+        return posts
+
+    def download_post(self, shortcode: str, output_dir: Path):
+        """Download a single post's media."""
+        post = instaloader.Post.from_shortcode(self.loader.context, shortcode)
+        self.loader.download_post(post, target=str(output_dir))
+```
+
+### TikTok with yt-dlp
+
+```python
+def scrape_tiktok_profile(username: str, output_dir: Path, limit: int = 50) -> list[dict]:
+    """Scrape TikTok profile videos."""
+    profile_url = f'https://tiktok.com/@{username}'
+
+    ydl_opts = {
+        'quiet': True,
+        'extract_flat': True,  # Don't download, just get info
+        'playlistend': limit,
+    }
+
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(profile_url, download=False)
+        videos = []
+
+        for entry in info.get('entries', []):
+            videos.append({
+                'id': entry.get('id'),
+                'title': entry.get('title'),
+                'url': entry.get('url'),
+                'timestamp': entry.get('timestamp'),
+                'view_count': entry.get('view_count'),
+            })
+
+        return videos
+
+def download_tiktok_video(url: str, output_dir: Path) -> Path:
+    """Download a single TikTok video."""
+    ydl_opts = {
+        'outtmpl': str(output_dir / '%(id)s.%(ext)s'),
+        'quiet': True,
+    }
+
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(url, download=True)
+        return Path(ydl.prepare_filename(info))
+```
+
+## Request patterns
+
+### Rotating user agents and headers
+
+```python
+import random
+from fake_useragent import UserAgent
+
+class RequestManager:
+    def __init__(self):
+        self.ua = UserAgent()
+        self.session = requests.Session()
+
+    def get_headers(self) -> dict:
+        return {
+            'User-Agent': self.ua.random,
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'DNT': '1',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1',
+        }
+
+    def fetch(self, url: str, retry_count: int = 3) -> requests.Response:
+        for attempt in range(retry_count):
+            try:
+                response = self.session.get(
+                    url,
+                    headers=self.get_headers(),
+                    timeout=30
+                )
+                response.raise_for_status()
+                return response
+            except requests.RequestException as e:
+                if attempt == retry_count - 1:
+                    raise
+                time.sleep(2 ** attempt)  # Exponential backoff
+```
+
+### Respectful scraping with delays
+
+```python
+import time
+import random
+from urllib.parse import urlparse
+
+class PoliteRequester:
+    def __init__(self, min_delay: float = 1.0, max_delay: float = 3.0):
+        self.min_delay = min_delay
+        self.max_delay = max_delay
+        self.last_request_per_domain = {}
+
+    def wait_for_domain(self, url: str):
+        domain = urlparse(url).netloc
+        last_request = self.last_request_per_domain.get(domain, 0)
+
+        elapsed = time.time() - last_request
+        delay = random.uniform(self.min_delay, self.max_delay)
+
+        if elapsed < delay:
+            time.sleep(delay - elapsed)
+
+        self.last_request_per_domain[domain] = time.time()
+```
+
+## Ethical considerations
+
+- Always check `robots.txt` before scraping
+- Respect rate limits and add delays between requests
+- Don't scrape personal data without consent
+- Cache responses to avoid redundant requests
+- Identify yourself with a descriptive User-Agent when appropriate
+- Stop if you receive explicit blocking signals
