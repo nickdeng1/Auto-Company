@@ -1418,3 +1418,160 @@ bookmarks | grep <pattern>
 ### `go <bookmark>`
 
 Navigate to bookmark.
+
+**Syntax:**
+```
+go <name>
+```
+
+---
+
+## File Commands
+
+### `save`
+
+Save page to local file.
+
+**Syntax:**
+```
+save <path>                  # save HTML
+save <path> --parsed         # save extracted markdown
+save <path> --complete       # save with assets
+```
+
+---
+
+### `tee`
+
+Save output while displaying.
+
+**Syntax:**
+```
+<command> | tee <file>
+<command> | tee -a <file>    # append
+```
+
+**Example:**
+```
+ls | grep "AI" | tee ai-links.txt
+```
+
+---
+
+### `xargs`
+
+Build and execute commands from input.
+
+**Syntax:**
+```
+<command> | xargs <cmd>
+<command> | xargs -I {} <cmd> {}
+<command> | xargs -P <n>     # parallel
+```
+
+**Examples:**
+```
+cat urls.txt | xargs -I {} cd {}
+ls | head 5 | xargs -P 5 follow    # fetch first 5 in parallel
+```
+
+---
+
+### `parallel`
+
+Run commands in parallel.
+
+**Syntax:**
+```
+parallel <cmd> ::: <args...>
+parallel -j <n>              # n jobs
+```
+
+**Example:**
+```
+parallel cd ::: https://a.com https://b.com https://c.com
+```
+
+---
+
+## Help & Documentation
+
+### `help`
+
+Show help.
+
+**Syntax:**
+```
+help                 # general help
+help <command>       # command-specific
+```
+
+---
+
+### `man`
+
+Detailed manual (or fetch site's API docs).
+
+**Syntax:**
+```
+man <command>        # websh command manual
+man <domain>         # try to fetch API docs for domain
+```
+
+---
+
+## Special Syntax
+
+### Pipes
+
+Commands can be chained:
+```
+ls | grep "AI" | head 3 | tee results.txt
+```
+
+### Background
+
+Append `&` to run in background:
+```
+cd https://slow-site.com &
+```
+
+### Command substitution
+
+Use `$()` to substitute command output:
+```
+cd $(wayback https://example.com 2020-01-01)
+diff $(locate "config" | head 1) $(locate "config" | tail 1)
+```
+
+### Glob patterns (for cached pages)
+
+```
+locate "error" --in "api-*"      # search pages matching api-*
+tar -c backup.tar news-*         # archive all news pages
+```
+
+### Selectors
+
+CSS selectors in commands:
+```
+cat .article-body
+ls nav a
+cat h1:first
+click button.submit
+```
+
+---
+
+## Error Messages
+
+| Error | Meaning |
+|-------|---------|
+| `error: no page loaded` | Run `cd <url>` first |
+| `error: selector not found` | No elements match |
+| `error: fetch failed` | Network error |
+| `error: rate limited` | Too many requests |
+| `error: outside chroot` | URL outside chroot boundary |
+| `error: mount failed` | Could not mount API |
+| `error: permission denied` | Auth required |
+| `error: job not found` | Invalid PID/job number |
