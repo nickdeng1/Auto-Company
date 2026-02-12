@@ -7,12 +7,12 @@
 14 个 AI Agent，每个都是该领域世界顶级专家的思维分身。
 自主构思产品、做决策、写代码、部署上线、搞营销。没有人类参与。
 
-基于 [Codex CLI](https://www.npmjs.com/package/@openai/codex) 驱动（macOS 原生 + Windows/WSL）。
+基于 [Codex CLI](https://www.npmjs.com/package/@openai/codex)（默认）与 Claude Code（可选）驱动（macOS 原生 + Windows/WSL）。
 
 [![macOS](https://img.shields.io/badge/平台-macOS-blue)](#依赖)
 [![Windows WSL](https://img.shields.io/badge/平台-Windows%20WSL-blue)](#windows-wsl-快速开始)
 [![Codex CLI](https://img.shields.io/badge/驱动-Codex%20CLI-orange)](https://www.npmjs.com/package/@openai/codex)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green)](#license)
+[![Claude Code](https://img.shields.io/badge/驱动-Claude%20Code-purple)](#依赖)
 [![Status](https://img.shields.io/badge/状态-实验中-red)](#%EF%B8%8F-免责声明)
 
 > **⚠️ 实验项目** — 还在测试中，能跑但不一定稳定。  
@@ -36,7 +36,7 @@
 daemon (launchd / systemd --user, 崩溃自重启)
   └── scripts/core/auto-loop.sh (永续循环)
         ├── 读 PROMPT.md + consensus.md
-        ├── codex exec (驱动一个工作周期)
+        ├── CLI 调用（默认：codex exec；可选：Claude Code）
         │   ├── 读 CLAUDE.md (公司章程 + 安全红线)
         │   ├── 读 .claude/skills/team/SKILL.md (组队方法)
         │   ├── 组建 Agent Team (3-5 人)
@@ -46,7 +46,7 @@ daemon (launchd / systemd --user, 崩溃自重启)
         └── sleep → 下一轮
 ```
 
-每个周期是一次独立的 `codex exec` 调用。`memories/consensus.md` 是唯一的跨周期状态——类似接力赛传棒。
+每个周期是一次独立的 CLI 调用（默认：`codex exec`）。`memories/consensus.md` 是唯一的跨周期状态——类似接力赛传棒。
 
 ## 你该看哪一节（按平台）
 
@@ -81,7 +81,7 @@ daemon (launchd / systemd --user, 崩溃自重启)
 ```bash
 # 前提:
 # - macOS
-# - 已安装 Codex CLI 并完成登录
+# - 已安装并登录 Codex CLI（默认）或 Claude Code（可选）
 # - 可用模型配额
 
 # 克隆
@@ -100,12 +100,12 @@ make install
 Windows 下推荐“PowerShell 命令入口 + WSL 执行内核”：
 
 1. 在 Windows 安装 WSL2 + Ubuntu。
-2. 在 WSL 中一次性安装运行依赖（`node`、`codex`、`jq`）。
+2. 在 WSL 中一次性安装运行依赖（`node`、`codex` 或 `claude`、`jq`）。
 3. 在 PowerShell 直接运行 `*-win.ps1` 脚本。
 
 详细步骤见：[`docs/windows-setup.md`](docs/windows-setup.md)
 
-常用 Windows 命令（在 `clone_win` 目录执行）：
+常用 Windows 命令（在仓库根目录执行）：
 
 ```powershell
 .\scripts\windows\start-win.ps1              # 启动 WSL daemon + 防睡眠 + WSL keepalive
@@ -122,11 +122,9 @@ Windows 下推荐“PowerShell 命令入口 + WSL 执行内核”：
 
 ### Windows 前置事项（每次开始前）
 
-1. 只在 `clone_win/` 运行与提交，`clone/` 仅留档。
-2. WSL 内 `make`、`codex`、`jq` 可用。
-3. `codex` 已在 WSL 内登录且可调用。
-4. 建议 `command -v codex` 优先指向 WSL 本地路径（`/home/...`）。
-5. `clone/` 若在 WSL 下显示大量 `git status` 修改（多为换行差异）可忽略，不要在该目录提交。
+1. WSL 内 `make`、选定 CLI（`codex` 或 `claude`）、`jq` 可用。
+2. 选定 CLI 已在 WSL 内登录且可调用。
+3. 建议 `command -v codex` 或 `command -v claude` 优先指向 WSL 本地路径（`/home/...`）。
 
 ### Windows 推荐操作（标准）
 
@@ -155,12 +153,13 @@ Windows 下推荐“PowerShell 命令入口 + WSL 执行内核”：
 
 ### Chat-first 操作方式（推荐）
 
-如果你不想手动执行命令，可以直接和 Codex 对话，由 Codex 在 Windows 侧代你调用 WSL。
+如果你不想手动执行命令，可以直接和 Codex/Claude 对话，由其在 Windows 侧代你调用 WSL。
 
 可行性：
 - 可行。
 - 底层仍是同一套脚本链路：`scripts/windows/start-win.ps1` -> WSL `systemd --user` -> `scripts/core/auto-loop.sh`。
 - Windows 入口会额外拉起 `wsl-anchor-win.ps1`，避免 WSL 会话空闲退出导致循环被中断。
+- 当前脚本默认接入 Codex。如需切换 Claude Code，请调整 `scripts/core/auto-loop.sh` 的引擎调用命令。
 - 核心运行机制与手动执行一致，差异只在“操作入口”从手工命令变为对话驱动。
 
 ## 命令速查（按平台）
@@ -257,7 +256,7 @@ auto-company/
 ├── CLAUDE.md              # 公司章程（使命 + 安全红线 + 团队 + 流程）
 ├── PROMPT.md              # 每轮工作指令（收敛规则）
 ├── Makefile               # 常用命令
-├── INDEX.md               # clone_win 索引与脚本职责表
+├── INDEX.md               # 脚本索引与职责表
 ├── dashboard/             # 本地 Web 状态看板（dashboard-win.ps1 启动）
 ├── scripts/
 │   ├── core/              # 主循环与核心控制实现（auto-loop/monitor/stop）
@@ -279,7 +278,8 @@ auto-company/
 
 | 依赖 | 说明 |
 |------|------|
-| **[Codex CLI](https://www.npmjs.com/package/@openai/codex)** | 必须安装并登录 |
+| **[Codex CLI](https://www.npmjs.com/package/@openai/codex)** | 当前脚本默认引擎 |
+| **Claude Code** | 可选引擎（需调整 `scripts/core/auto-loop.sh`） |
 | **macOS 或 Windows + WSL2 (Ubuntu)** | macOS 支持 launchd；Windows 走 WSL 执行内核 |
 | `node` | Codex 运行时 |
 | `make` | 启停与监控命令入口（WSL/macOS） |
@@ -296,10 +296,10 @@ auto-company/
   - 保持仓库 `.gitattributes` 为 LF 规则
   - 在仓库执行 `git config core.autocrlf false && git config core.eol lf`
 
-### 2) WSL 报 `codex: node not found`
+### 2) WSL 报 `codex`/`claude` 命令不存在
 
-- 原因：只在 Windows 安装了 Codex/Node，WSL 环境缺失
-- 处理：在 WSL 内安装 `node` 与 `@openai/codex`
+- 原因：只在 Windows 安装了 CLI，WSL 环境缺失
+- 处理：在 WSL 内安装 `node` 与你选择的 CLI（`@openai/codex` 或 Claude Code）
 
 ### 3) 在 WSL 执行 `make install` 失败
 
@@ -308,14 +308,6 @@ auto-company/
   - 确认 WSL 已启用 systemd
   - 执行 `systemctl --user --version`
   - 若仍失败，重新登录 WSL 会话后重试
-
-### 4) `clone/` 在 WSL 下显示大量 Git 改动
-
-- 原因：`clone/` 是留档目录，可能受 Windows CRLF 策略影响，WSL Git 会显示为改动。
-- 可否忽略：可以。前提是你不在 `clone/` 提交。
-- 要求：
-  - 开发与提交只在 `clone_win/`。
-  - `clone/` 仅用于留档对照。
 
 ## ⚠️ 免责声明
 
@@ -330,12 +322,18 @@ auto-company/
 
 建议先用 `make start`（前台）观察行为，再启用守护模式（macOS/WSL：`make install`，Windows：`.\scripts\windows\start-win.ps1`）。
 
+## 🤝 贡献
+
+欢迎提交 Issue 和 Pull Request。
+
+建议流程：
+1. Fork 本仓库。
+2. 创建独立功能分支。
+3. 保持变更小而可验证。
+4. 提交 PR 时写清背景、风险与验证结果。
+
 ## 致谢
 
 - [continuous-claude](https://github.com/AnandChowdhary/continuous-claude) — 跨会话共享笔记
 - [ralph-claude-code](https://github.com/frankbria/ralph-claude-code) — 退出信号拦截
 - [claude-auto-resume](https://github.com/terryso/claude-auto-resume) — 用量限制恢复
-
-## License
-
-MIT

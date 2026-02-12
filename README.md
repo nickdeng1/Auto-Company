@@ -7,12 +7,12 @@
 14 AI agents, each modeled after world-class experts in their domain.
 They ideate products, make decisions, write code, deploy, and market - without human intervention.
 
-Powered by [Codex CLI](https://www.npmjs.com/package/@openai/codex) (macOS native + Windows/WSL).
+Powered by [Codex CLI](https://www.npmjs.com/package/@openai/codex) (default) and Claude Code (optional) on macOS + Windows/WSL.
 
 [![macOS](https://img.shields.io/badge/Platform-macOS-blue)](#dependencies)
 [![Windows WSL](https://img.shields.io/badge/Platform-Windows%20WSL-blue)](#windows-wsl-quick-start)
 [![Codex CLI](https://img.shields.io/badge/Engine-Codex%20CLI-orange)](https://www.npmjs.com/package/@openai/codex)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green)](#license)
+[![Claude Code](https://img.shields.io/badge/Engine-Claude%20Code-purple)](#dependencies)
 [![Status](https://img.shields.io/badge/Status-Experimental-red)](#disclaimer)
 
 > **Experimental project** - still under active testing. It runs, but stability is not guaranteed.  
@@ -36,7 +36,7 @@ You start a loop. The AI team wakes up, reads shared consensus memory, decides w
 daemon (launchd / systemd --user, auto-restart on crash)
   └── scripts/core/auto-loop.sh (continuous loop)
         ├── reads PROMPT.md + consensus.md
-        ├── codex exec (runs one work cycle)
+        ├── LLM CLI call (default: codex exec; optional: Claude Code)
         │   ├── reads CLAUDE.md (charter + guardrails)
         │   ├── reads .claude/skills/team/SKILL.md (teaming method)
         │   ├── forms an Agent Team (3-5 agents)
@@ -46,7 +46,7 @@ daemon (launchd / systemd --user, auto-restart on crash)
         └── sleep -> next cycle
 ```
 
-Each cycle is an independent `codex exec` call. `memories/consensus.md` is the only cross-cycle state.
+Each cycle is an independent CLI call (default: `codex exec`). `memories/consensus.md` is the only cross-cycle state.
 
 ## Where To Start (By Platform)
 
@@ -81,7 +81,7 @@ Plus 30+ reusable skills (deep research, scraping, financial modeling, SEO, secu
 ```bash
 # Prerequisites:
 # - macOS
-# - Codex CLI installed and authenticated
+# - Codex CLI (default) or Claude Code installed and authenticated
 # - Available model quota
 
 # Clone
@@ -100,12 +100,12 @@ make install
 Recommended architecture on Windows: PowerShell command entry + WSL execution core.
 
 1. Install WSL2 + Ubuntu on Windows.
-2. Install runtime dependencies inside WSL (`node`, `codex`, `jq`).
+2. Install runtime dependencies inside WSL (`node`, `codex` or `claude`, `jq`).
 3. Run `*-win.ps1` scripts from PowerShell.
 
 Detailed guide: [`docs/windows-setup.md`](docs/windows-setup.md)
 
-Common Windows commands (run in `clone_win`):
+Common Windows commands (run in the repository root):
 
 ```powershell
 .\scripts\windows\start-win.ps1              # Start WSL daemon + awake guardian + WSL keepalive
@@ -122,11 +122,9 @@ Common Windows commands (run in `clone_win`):
 
 ### Windows Preconditions (Before Each Run)
 
-1. Develop and commit only in `clone_win/`; keep `clone/` as archive.
-2. Ensure `make`, `codex`, and `jq` are available inside WSL.
-3. Ensure `codex` is authenticated and runnable inside WSL.
-4. Prefer WSL-local Codex path (`/home/...`) from `command -v codex`.
-5. If `clone/` shows many WSL Git changes (usually line-ending noise), ignore and do not commit there.
+1. Ensure `make`, selected CLI (`codex` or `claude`), and `jq` are available inside WSL.
+2. Ensure selected CLI is authenticated and runnable inside WSL.
+3. Prefer WSL-local CLI path (`/home/...`) from `command -v codex` or `command -v claude`.
 
 ### Windows Recommended Flow
 
@@ -155,12 +153,13 @@ For full file index and script responsibility matrix, see [`INDEX.md`](INDEX.md)
 
 ### Chat-First Operation (Recommended)
 
-If you do not want to run commands manually, you can operate through Codex chat on Windows.
+If you do not want to run commands manually, you can operate through Codex/Claude chat on Windows.
 
 Feasibility:
 - Yes, this works.
 - Core chain remains the same: `scripts/windows/start-win.ps1` -> WSL `systemd --user` -> `scripts/core/auto-loop.sh`.
 - Windows entry also starts `wsl-anchor-win.ps1` to reduce idle WSL session teardown.
+- Current scripts are wired to Codex by default. To run Claude Code, adapt the engine command in `scripts/core/auto-loop.sh`.
 - Core behavior is identical to manual operation; only the control interface changes.
 
 ## Command Quick Reference (By Platform)
@@ -257,7 +256,7 @@ auto-company/
 ├── CLAUDE.md              # Company charter (mission + guardrails + team + workflows)
 ├── PROMPT.md              # Per-cycle execution prompt (convergence rules)
 ├── Makefile               # Common command entry
-├── INDEX.md               # clone_win index + script responsibility table
+├── INDEX.md               # script index + responsibility table
 ├── dashboard/             # Local web status dashboard (started via dashboard-win.ps1)
 ├── scripts/
 │   ├── core/              # Core loop and control scripts (auto-loop/monitor/stop)
@@ -279,7 +278,8 @@ auto-company/
 
 | Dependency | Notes |
 |------|------|
-| **[Codex CLI](https://www.npmjs.com/package/@openai/codex)** | Required, must be installed and logged in |
+| **[Codex CLI](https://www.npmjs.com/package/@openai/codex)** | Default engine for current scripts |
+| **Claude Code** | Optional engine (requires adapting `scripts/core/auto-loop.sh`) |
 | **macOS or Windows + WSL2 (Ubuntu)** | macOS uses launchd; Windows uses WSL execution core |
 | `node` | Codex runtime |
 | `make` | Start/stop/monitor command entry (WSL/macOS) |
@@ -296,10 +296,10 @@ auto-company/
   - Keep LF rules in `.gitattributes`
   - Run `git config core.autocrlf false && git config core.eol lf`
 
-### 2) WSL says `codex: node not found`
+### 2) WSL says `codex`/`claude` command not found
 
-- Cause: Codex/Node installed on Windows only, missing in WSL
-- Fix: install `node` and `@openai/codex` inside WSL
+- Cause: CLI installed on Windows only, missing in WSL
+- Fix: install `node` and your chosen CLI inside WSL (`@openai/codex` or Claude Code)
 
 ### 3) `make install` fails inside WSL
 
@@ -308,14 +308,6 @@ auto-company/
   - Verify WSL systemd is enabled
   - Run `systemctl --user --version`
   - Re-open WSL session and retry if needed
-
-### 4) `clone/` shows many Git changes under WSL
-
-- Cause: archive directory with potential CRLF/LF noise
-- Can it be ignored: yes, if you do not commit there
-- Requirement:
-  - Develop and commit only in `clone_win/`
-  - Keep `clone/` for archival comparison only
 
 ## Disclaimer
 
@@ -330,12 +322,18 @@ This is an **experimental project**:
 
 Suggested rollout: start with `make start` (foreground), then move to daemon mode (`make install` on macOS/WSL, `.\scripts\windows\start-win.ps1` on Windows).
 
+## 🤝 Contribution
+
+Issues and pull requests are welcome.
+
+Recommended flow:
+1. Fork the repository.
+2. Create a feature branch.
+3. Keep changes scoped and testable.
+4. Open a PR with clear context, risk, and verification notes.
+
 ## Acknowledgments
 
 - [continuous-claude](https://github.com/AnandChowdhary/continuous-claude) - cross-session shared notes
 - [ralph-claude-code](https://github.com/frankbria/ralph-claude-code) - exit signal interception
 - [claude-auto-resume](https://github.com/terryso/claude-auto-resume) - usage-limit resume pattern
-
-## License
-
-MIT

@@ -55,10 +55,9 @@ wsl -d Ubuntu -u root loginctl enable-linger <your-user>
 
 ## 3. 前置事项（每次开始前）
 
-1. 只在 `clone_win/` 运行与提交，`clone/` 仅留档。
-2. WSL 内 `make`、`codex`、`jq`、`systemctl --user` 可用。
-3. `codex` 在 WSL 内已登录且可用。
-4. 建议确认 `codex` 路径优先是 WSL 本地路径（`/home/...`）。
+1. WSL 内 `make`、`codex`、`jq`、`systemctl --user` 可用。
+2. `codex` 在 WSL 内已登录且可用。
+3. 建议确认 `codex` 路径优先是 WSL 本地路径（`/home/...`）。
 
 可选快速检查（PowerShell）：
 
@@ -69,7 +68,7 @@ wsl -d Ubuntu bash -lc 'command -v codex'
 
 ## 4. 推荐操作（标准）
 
-在 `clone_win` 目录运行：
+在仓库根目录运行：
 
 ```powershell
 .\scripts\windows\start-win.ps1 -CycleTimeoutSeconds 1800 -LoopInterval 30
@@ -153,14 +152,6 @@ git config core.eol lf
 - 原因：PATH 先命中 Windows 侧 codex
 - 影响：版本和行为可能与 WSL 本地终端不一致
 - 处理：在 WSL 内安装并优先使用本地 Codex（`/home/<user>/...`）
-
-### `clone/` 在 WSL 下 `git status` 显示大量修改
-
-- 原因：`clone/` 作为留档目录，可能受 CRLF/LF 差异影响。
-- 结论：如果你只在 `clone_win/` 开发，这些状态可忽略。
-- 要求：
-  - 不在 `clone/` 提交代码。
-  - 只在 `clone_win/` 目录开发和提交。
 
 ### guardian 启动失败
 
