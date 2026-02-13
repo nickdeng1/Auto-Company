@@ -98,20 +98,25 @@ make install
 
 ## Windows (WSL) 快速开始
 
-Windows 下推荐“PowerShell 命令入口 + WSL 执行内核”：
-
-1. 在 Windows 安装 WSL2 + Ubuntu。
-2. 在 WSL 中一次性安装运行依赖（`node`、`codex` 或 `claude`、`jq`）。
-3. 在 PowerShell 直接运行 `*-win.ps1` 脚本。
-
-详细步骤见：[`docs/windows-setup.md`](docs/windows-setup.md)
-
-最小运行命令（在仓库根目录执行）：
-
 ```powershell
-.\scripts\windows\start-win.ps1              # 启动 WSL daemon + 防睡眠 + WSL keepalive
-.\scripts\windows\status-win.ps1             # 查看 guardian + keepalive + daemon + 循环状态
-.\scripts\windows\stop-win.ps1               # 停止循环
+# 前提:
+# - Windows 10/11 + WSL2 (Ubuntu)
+# - 已在 WSL 内安装并登录 Codex CLI 或 Claude Code
+# - WSL 内已可用 jq 和 make
+# - 可用模型配额
+
+# 克隆
+git clone https://github.com/nicepkg/auto-company.git
+cd auto-company
+
+# 在 PowerShell 启动（守护模式）
+.\scripts\windows\start-win.ps1
+
+# 查看状态
+.\scripts\windows\status-win.ps1
+
+# 停止
+.\scripts\windows\stop-win.ps1
 ```
 
 监控、看板、自启等命令请查看 [`docs/windows-setup.md`](docs/windows-setup.md)。
@@ -288,6 +293,7 @@ auto-company/
 
 ## 致谢
 
+- [nicepkg/auto-company](https://github.com/nicepkg/auto-company) — macOS初版
 - [continuous-claude](https://github.com/AnandChowdhary/continuous-claude) — 跨会话共享笔记
 - [ralph-claude-code](https://github.com/frankbria/ralph-claude-code) — 退出信号拦截
 - [claude-auto-resume](https://github.com/terryso/claude-auto-resume) — 用量限制恢复

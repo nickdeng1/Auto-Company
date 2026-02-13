@@ -98,23 +98,28 @@ make install
 
 ## Windows (WSL) Quick Start
 
-Recommended architecture on Windows: PowerShell command entry + WSL execution core.
-
-1. Install WSL2 + Ubuntu on Windows.
-2. Install runtime dependencies inside WSL (`node`, `codex` or `claude`, `jq`).
-3. Run `*-win.ps1` scripts from PowerShell.
-
-Detailed guide: [`docs/windows-setup.md`](docs/windows-setup.md)
-
-Minimal run (from repository root):
-
 ```powershell
-.\scripts\windows\start-win.ps1              # Start WSL daemon + awake guardian + WSL keepalive
-.\scripts\windows\status-win.ps1             # Guardian + keepalive + daemon + loop status
-.\scripts\windows\stop-win.ps1               # Stop loop
+# Prerequisites:
+# - Windows 10/11 + WSL2 (Ubuntu)
+# - Codex CLI or Claude Code installed and authenticated inside WSL
+# - jq and make available inside WSL
+# - Available model quota
+
+# Clone
+git clone https://github.com/nicepkg/auto-company.git
+cd auto-company
+
+# Start (daemon mode via PowerShell)
+.\scripts\windows\start-win.ps1
+
+# Status
+.\scripts\windows\status-win.ps1
+
+# Stop
+.\scripts\windows\stop-win.ps1
 ```
 
-For monitoring, dashboard, and autostart commands, use [`docs/windows-setup.md`](docs/windows-setup.md).
+For monitoring, dashboard, and autostart commands, see [`docs/windows-setup.md`](docs/windows-setup.md).
 
 ## Command Quick Reference (By Platform)
 
@@ -287,6 +292,7 @@ Recommended flow:
 
 ## Acknowledgments
 
+- [nicepkg/auto-company](https://github.com/nicepkg/auto-company) - initial macOS edition
 - [continuous-claude](https://github.com/AnandChowdhary/continuous-claude) - cross-session shared notes
 - [ralph-claude-code](https://github.com/frankbria/ralph-claude-code) - exit signal interception
 - [claude-auto-resume](https://github.com/terryso/claude-auto-resume) - usage-limit resume pattern
