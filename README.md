@@ -249,23 +249,40 @@ auto-company/
 | **OpenCode** | `auto-loop-opencode.sh` | `opencode` | Alternative engine |
 | **Qwen** | `auto-loop-qwen.py` | Qwen API | Chinese LLM support |
 
-## Web Dashboard (macOS)
+## Web Dashboard (Enhanced Edition)
 
 The dashboard provides a web UI for monitoring and controlling the loop:
 
 ```bash
-# Start dashboard server
-python3 dashboard/server-macos.py --port 8787
+# Enhanced Dashboard (Recommended)
+python3 dashboard/server-enhanced.py --host 0.0.0.0 --port 8787
 
-# Then open http://127.0.0.1:8787 in browser
+# macOS Basic
+python3 dashboard/server-macos.py --port 8787
 ```
 
-Features:
-- Real-time status monitoring
-- Engine selection (OpenCode / Qwen)
-- Start/Stop controls
-- Consensus file preview
-- Live log tail
+Then open http://服务器IP:8787 in browser.
+
+**Dashboard Tabs:**
+
+| Tab | Features |
+|-----|----------|
+| **Overview** | Consensus file, running status, Agent activity timeline |
+| **Artifacts** | File tree navigation + Markdown/code preview + download |
+| **Logs** | Main log / cycle log switcher + search filter |
+| **Cycles** | All cycle log history with details |
+
+**API Endpoints:**
+
+| API | Description |
+|-----|-------------|
+| `/api/status` | Full status info |
+| `/api/files?dir=docs` | File listing (docs/projects/logs) |
+| `/api/file/<path>` | File content preview |
+| `/api/download/<path>` | File download |
+| `/api/cycles` | Cycle log list |
+| `/api/cycle/<filename>` | Single cycle log content |
+| `/api/activities` | Agent activity records |
 
 ## Dependencies
 

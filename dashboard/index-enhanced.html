@@ -1,0 +1,901 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Auto Company 控制台</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+  <style>
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #12121a;
+      --bg-card: #1a1a24;
+      --bg-hover: #222230;
+      --text-primary: #e8e8f0;
+      --text-secondary: #8888a0;
+      --text-muted: #555566;
+      --accent: #00d4aa;
+      --accent-dim: #00a080;
+      --warning: #ffaa00;
+      --error: #ff4466;
+      --good: #00dd88;
+      --border: #2a2a3a;
+      --border-light: #3a3a4a;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header h1::before { content: "⚡"; font-size: 24px; }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .status-badge.running {
+      background: rgba(0, 221, 136, 0.15);
+      color: var(--good);
+      border: 1px solid var(--good);
+    }
+
+    .status-badge.stopped {
+      background: rgba(255, 170, 0, 0.15);
+      color: var(--warning);
+      border: 1px solid var(--warning);
+    }
+
+    .status-badge .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-primary { background: var(--accent); color: #000; }
+    .btn-primary:hover { background: var(--accent-dim); }
+    .btn-danger { background: rgba(255, 68, 102, 0.15); color: var(--error); border: 1px solid var(--error); }
+    .btn-danger:hover { background: rgba(255, 68, 102, 0.25); }
+    .btn-secondary { background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border); }
+    .btn-secondary:hover { border-color: var(--accent); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn.small { padding: 5px 10px; font-size: 12px; }
+
+    .auto-refresh {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-left: auto;
+    }
+
+    .auto-refresh label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .auto-refresh select {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+
+    /* Tab Navigation */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0;
+    }
+
+    .tab {
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: -1px;
+    }
+
+    .tab:hover { color: var(--text-primary); }
+    .tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Cards Grid */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+
+    .card h3 {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin: 0 0 8px 0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .card .value {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .card .meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .card.good { border-color: var(--good); }
+    .card.good .value { color: var(--good); }
+    .card.warn { border-color: var(--warning); }
+    .card.warn .value { color: var(--warning); }
+    .card.error { border-color: var(--error); }
+    .card.error .value { color: var(--error); }
+
+    /* Panels */
+    .panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-secondary);
+    }
+
+    .panel-header h3 {
+      font-size: 14px;
+      font-weight: 600;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-body { padding: 16px; }
+
+    /* Grid Layouts */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 900px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    /* File Browser */
+    .file-browser {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 16px;
+      min-height: 500px;
+    }
+
+    @media (max-width: 768px) {
+      .file-browser { grid-template-columns: 1fr; }
+    }
+
+    .file-tree {
+      background: var(--bg-secondary);
+      border-radius: 8px;
+      padding: 12px;
+      overflow-y: auto;
+      max-height: 600px;
+    }
+
+    .file-tree-header {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 8px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 8px;
+    }
+
+    .file-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: background 0.15s;
+    }
+
+    .file-item:hover { background: var(--bg-hover); }
+    .file-item.active { background: var(--accent); color: #000; }
+    .file-item.dir { color: var(--accent); }
+    .file-item.dir::before { content: "📁"; }
+    .file-item.file-markdown::before { content: "📝"; }
+    .file-item.file-code::before { content: "💻"; }
+    .file-item.file-json::before { content: "📊"; }
+    .file-item.file-log::before { content: "📜"; }
+    .file-item.file::before { content: "📄"; }
+
+    .file-item .size {
+      margin-left: auto;
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .file-preview {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .file-preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      background: var(--bg-secondary);
+      border-radius: 8px 8px 0 0;
+      border: 1px solid var(--border);
+      border-bottom: none;
+    }
+
+    .file-preview-header h4 {
+      margin: 0;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .file-preview-content {
+      flex: 1;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 0 0 8px 8px;
+      padding: 16px;
+      overflow: auto;
+      max-height: 550px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .file-preview-content pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+    }
+
+    /* Markdown Preview */
+    .markdown-preview h1, .markdown-preview h2, .markdown-preview h3 {
+      color: var(--accent);
+      margin-top: 16px;
+      margin-bottom: 8px;
+    }
+    .markdown-preview h1 { font-size: 20px; }
+    .markdown-preview h2 { font-size: 18px; }
+    .markdown-preview h3 { font-size: 16px; }
+
+    .markdown-preview p { margin: 8px 0; }
+    .markdown-preview code {
+      background: var(--bg-secondary);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+    }
+    .markdown-preview pre {
+      background: var(--bg-secondary);
+      padding: 12px;
+      border-radius: 6px;
+      overflow-x: auto;
+    }
+    .markdown-preview pre code {
+      background: transparent;
+      padding: 0;
+    }
+    .markdown-preview ul { padding-left: 20px; }
+    .markdown-preview li { margin: 4px 0; }
+    .markdown-preview a { color: var(--accent); }
+    .markdown-preview table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 12px 0;
+    }
+    .markdown-preview th, .markdown-preview td {
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      text-align: left;
+    }
+    .markdown-preview th { background: var(--bg-secondary); }
+
+    /* Log Terminal */
+    .terminal {
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      max-height: 450px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      color: var(--text-secondary);
+    }
+
+    .terminal::-webkit-scrollbar { width: 6px; }
+    .terminal::-webkit-scrollbar-track { background: var(--bg-secondary); }
+    .terminal::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .log-line { padding: 2px 0; }
+    .log-line.error { color: var(--error); }
+    .log-line.warn { color: var(--warning); }
+    .log-line.info { color: var(--accent); }
+    .log-line.success { color: var(--good); }
+
+    /* Cycle Selector */
+    .cycle-selector {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .cycle-selector select {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      min-width: 250px;
+    }
+
+    /* State List */
+    .state-list {
+      display: grid;
+      gap: 6px;
+    }
+
+    .state-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: var(--bg-secondary);
+      border-radius: 6px;
+    }
+
+    .state-row dt { color: var(--text-secondary); font-size: 13px; }
+    .state-row dd { font-family: 'JetBrains Mono', monospace; font-size: 13px; margin: 0; }
+
+    /* Consensus */
+    .consensus-content {
+      max-height: 400px;
+      overflow-y: auto;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    /* Activities */
+    .activities-container {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 16px;
+      min-height: 300px;
+    }
+
+    @media (max-width: 768px) {
+      .activities-container { grid-template-columns: 1fr; }
+    }
+
+    .agent-stats {
+      background: var(--bg-secondary);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .agent-stat-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px;
+      border-radius: 6px;
+      margin-bottom: 4px;
+      transition: background 0.2s;
+    }
+
+    .agent-stat-item:hover { background: var(--bg-card); }
+
+    .agent-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 600;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+
+    .agent-stat-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .agent-name { font-size: 12px; font-weight: 500; }
+    .agent-count { font-size: 11px; color: var(--text-muted); }
+
+    .activity-item {
+      background: var(--bg-secondary);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 8px;
+      border-left: 3px solid var(--accent);
+    }
+
+    .activity-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+
+    .activity-agent { font-weight: 600; font-size: 13px; }
+    .activity-action {
+      font-size: 11px;
+      padding: 2px 8px;
+      background: var(--bg-card);
+      border-radius: 4px;
+    }
+    .activity-time { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+    .activity-cycle {
+      margin-left: auto;
+      font-size: 10px;
+      color: var(--text-muted);
+      background: var(--bg-card);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .activity-content { font-size: 12px; line-height: 1.5; }
+    .activity-input, .activity-output, .activity-file {
+      margin: 4px 0;
+      padding-left: 12px;
+      border-left: 2px solid var(--border);
+    }
+    .activity-file code {
+      background: var(--bg-card);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--accent);
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+    }
+    .empty-state p { margin: 8px 0; }
+
+    /* Progress */
+    .progress-bar {
+      height: 4px;
+      background: var(--bg-secondary);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      transition: width 0.3s;
+    }
+
+    /* Current Progress */
+    .current-progress {
+      background: var(--bg-secondary);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .progress-title { font-weight: 600; font-size: 14px; }
+    .progress-time { font-size: 12px; color: var(--text-muted); }
+
+    .progress-steps { display: grid; gap: 8px; }
+
+    .progress-step {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      background: var(--bg-card);
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    .progress-step.active {
+      border: 1px solid var(--accent);
+      background: rgba(0, 212, 170, 0.1);
+    }
+
+    .progress-step.completed { opacity: 0.6; }
+    .progress-step .icon { font-size: 16px; }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 20px;
+      color: var(--text-muted);
+      font-size: 12px;
+      border-top: 1px solid var(--border);
+      margin-top: 20px;
+    }
+
+    /* Search */
+    .search-box {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .search-box input {
+      flex: 1;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    /* Breadcrumb */
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .breadcrumb a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { color: var(--text-secondary); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <h1>Auto Company 控制台</h1>
+      <div class="status-badge" id="statusBadge">
+        <span class="dot"></span>
+        <span id="statusText">加载中...</span>
+      </div>
+    </header>
+
+    <!-- Controls -->
+    <section class="controls">
+      <button class="btn btn-primary" id="btnStart">▶ 启动</button>
+      <button class="btn btn-danger" id="btnStop">■ 停止</button>
+      <button class="btn btn-secondary" id="btnRefresh">↻ 刷新</button>
+
+      <select id="engineSelect" style="background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px; font-size: 13px;">
+        <option value="qwen" selected>Qwen 引擎</option>
+        <option value="opencode">OpenCode 引擎</option>
+      </select>
+
+      <div class="auto-refresh">
+        <label>
+          <input type="checkbox" id="autoRefresh" checked />
+          自动刷新
+        </label>
+        <select id="refreshInterval">
+          <option value="3000">3秒</option>
+          <option value="5000" selected>5秒</option>
+          <option value="10000">10秒</option>
+          <option value="30000">30秒</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Status Cards -->
+    <section class="cards-grid" id="cardsGrid">
+      <article class="card" id="cardLoop">
+        <h3>循环状态</h3>
+        <div class="value" id="loopState">--</div>
+        <div class="meta" id="loopMeta">PID: --</div>
+      </article>
+      <article class="card" id="cardEngine">
+        <h3>运行引擎</h3>
+        <div class="value" id="engineName">--</div>
+        <div class="meta" id="engineMeta">模型: --</div>
+      </article>
+      <article class="card" id="cardCycles">
+        <h3>循环次数</h3>
+        <div class="value" id="cycleCount">--</div>
+        <div class="meta" id="cycleMeta">错误: --</div>
+      </article>
+      <article class="card" id="cardLastRun">
+        <h3>最后运行</h3>
+        <div class="value" id="lastRun">--</div>
+        <div class="meta" id="lastRunMeta">--</div>
+      </article>
+    </section>
+
+    <!-- Tabs -->
+    <nav class="tabs">
+      <button class="tab active" data-tab="overview">📊 概览</button>
+      <button class="tab" data-tab="files">📁 产出物</button>
+      <button class="tab" data-tab="logs">📜 日志</button>
+      <button class="tab" data-tab="cycles">🔄 周期历史</button>
+    </nav>
+
+    <!-- Tab: Overview -->
+    <div class="tab-content active" id="tab-overview">
+      <section class="grid-2">
+        <!-- Consensus -->
+        <article class="panel">
+          <div class="panel-header">
+            <h3>📋 共识文件</h3>
+            <button class="btn btn-secondary small" id="btnConsensus">刷新</button>
+          </div>
+          <div class="panel-body">
+            <div class="consensus-content markdown-preview" id="consensusContent">
+              <div class="empty-state"><p>加载中...</p></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- State Info -->
+        <article class="panel">
+          <div class="panel-header">
+            <h3>📊 运行状态</h3>
+          </div>
+          <div class="panel-body">
+            <dl class="state-list" id="stateList">
+              <div class="empty-state"><p>加载中...</p></div>
+            </dl>
+          </div>
+        </article>
+      </section>
+
+      <!-- Agent Activities -->
+      <section class="panel">
+        <div class="panel-header">
+          <h3>🤖 Agent 活动</h3>
+          <span id="activitiesCount" style="color: var(--text-muted); font-size: 12px;">0 条记录</span>
+        </div>
+        <div class="panel-body">
+          <div class="activities-container">
+            <div class="agent-stats" id="agentStats">
+              <p style="color: var(--text-muted); font-size: 12px;">暂无统计数据</p>
+            </div>
+            <div class="activities-timeline" id="activitiesTimeline">
+              <div class="empty-state">
+                <p>暂无 Agent 活动记录</p>
+                <p style="font-size: 12px;">等待下一个工作周期开始...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Tab: Files -->
+    <div class="tab-content" id="tab-files">
+      <section class="panel">
+        <div class="panel-header">
+          <h3>📁 产出物浏览器</h3>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-secondary small" data-dir="docs">📄 docs/</button>
+            <button class="btn btn-secondary small" data-dir="projects">🚀 projects/</button>
+            <button class="btn btn-secondary small" data-dir="logs">📜 logs/</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="file-browser">
+            <div class="file-tree" id="fileTree">
+              <div class="file-tree-header">文件列表</div>
+              <div class="empty-state" style="padding: 20px;"><p>选择目录浏览文件</p></div>
+            </div>
+            <div class="file-preview" id="filePreview">
+              <div class="empty-state" style="padding: 60px 20px;">
+                <p>👈 选择文件查看内容</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Tab: Logs -->
+    <div class="tab-content" id="tab-logs">
+      <section class="panel">
+        <div class="panel-header">
+          <h3>📜 运行日志</h3>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <select id="logType" style="background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border); padding: 6px 10px; border-radius: 4px; font-size: 12px;">
+              <option value="main">主日志</option>
+              <option value="cycle">周期日志</option>
+            </select>
+            <button class="btn btn-secondary small" id="btnLog">刷新</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="search-box">
+            <input type="text" id="logSearch" placeholder="搜索日志..." />
+            <button class="btn btn-secondary small" id="btnLogSearch">搜索</button>
+          </div>
+          <div class="cycle-selector" id="cycleSelector" style="display: none;">
+            <span style="font-size: 12px; color: var(--text-secondary);">选择周期:</span>
+            <select id="cycleSelect" style="background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px; font-size: 13px; flex: 1;">
+              <option value="">加载中...</option>
+            </select>
+          </div>
+          <div class="terminal" id="logTerminal">加载中...</div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Tab: Cycles -->
+    <div class="tab-content" id="tab-cycles">
+      <section class="panel">
+        <div class="panel-header">
+          <h3>🔄 周期历史</h3>
+          <button class="btn btn-secondary small" id="btnRefreshCycles">刷新</button>
+        </div>
+        <div class="panel-body">
+          <div id="cyclesList" style="display: grid; gap: 12px;">
+            <div class="empty-state"><p>加载中...</p></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      Auto Company Dashboard · Enhanced Edition · 更新: <span id="updateTime">--</span>
+    </footer>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+# Auto Company Dashboard Dependencies
+# =====================================
+# Core dashboard uses only Python standard library
+# This file is for test dependencies
+
+# Testing
+pytest>=7.0.0
+pytest-cov>=4.0.0
+
+# Linting (dev)
+ruff>=0.1.0
+black>=23.0.0
