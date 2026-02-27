@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Auto Company 控制台</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+  <style>
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #12121a;
+      --bg-card: #1a1a24;
+      --text-primary: #e8e8f0;
+      --text-secondary: #8888a0;
+      --text-muted: #555566;
+      --accent: #00d4aa;
+      --accent-dim: #00a080;
+      --warning: #ffaa00;
+      --error: #ff4466;
+      --good: #00dd88;
+      --border: #2a2a3a;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header h1::before {
+      content: "⚡";
+      font-size: 28px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .status-badge.running {
+      background: rgba(0, 221, 136, 0.15);
+      color: var(--good);
+      border: 1px solid var(--good);
+    }
+
+    .status-badge.stopped {
+      background: rgba(255, 170, 0, 0.15);
+      color: var(--warning);
+      border: 1px solid var(--warning);
+    }
+
+    .status-badge .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .btn {
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #000;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-dim);
+    }
+
+    .btn-danger {
+      background: rgba(255, 68, 102, 0.15);
+      color: var(--error);
+      border: 1px solid var(--error);
+    }
+
+    .btn-danger:hover {
+      background: rgba(255, 68, 102, 0.25);
+    }
+
+    .btn-secondary {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .auto-refresh {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-left: auto;
+    }
+
+    .auto-refresh label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .auto-refresh select {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    /* Cards Grid */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .card h3 {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin: 0 0 12px 0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .card .value {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .card .meta {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .card.good { border-color: var(--good); }
+    .card.good .value { color: var(--good); }
+    .card.warn { border-color: var(--warning); }
+    .card.warn .value { color: var(--warning); }
+    .card.error { border-color: var(--error); }
+    .card.error .value { color: var(--error); }
+
+    /* Main Content */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-header h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .panel-body {
+      padding: 16px;
+    }
+
+    /* Consensus */
+    .consensus-content {
+      max-height: 400px;
+      overflow-y: auto;
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .consensus-content h1, .consensus-content h2, .consensus-content h3 {
+      color: var(--accent);
+      margin-top: 16px;
+      margin-bottom: 8px;
+    }
+
+    .consensus-content h1 { font-size: 18px; }
+    .consensus-content h2 { font-size: 16px; }
+    .consensus-content h3 { font-size: 14px; }
+
+    .consensus-content p {
+      margin: 8px 0;
+      color: var(--text-primary);
+    }
+
+    .consensus-content code {
+      background: var(--bg-secondary);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+    }
+
+    .consensus-content ul {
+      padding-left: 20px;
+      margin: 8px 0;
+    }
+
+    .consensus-content li {
+      margin: 4px 0;
+    }
+
+    /* Log Terminal */
+    .terminal {
+      background: var(--bg-primary);
+      border-radius: 8px;
+      padding: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      max-height: 500px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      color: var(--text-secondary);
+    }
+
+    .terminal::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .terminal::-webkit-scrollbar-track {
+      background: var(--bg-secondary);
+    }
+
+    .terminal::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
+
+    /* State List */
+    .state-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .state-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: var(--bg-secondary);
+      border-radius: 6px;
+    }
+
+    .state-row dt {
+      color: var(--text-secondary);
+      font-size: 13px;
+    }
+
+    .state-row dd {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--text-primary);
+    }
+
+    /* Progress */
+    .progress-bar {
+      height: 4px;
+      background: var(--bg-secondary);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      transition: width 0.3s;
+    }
+
+    /* Loading */
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      color: var(--text-muted);
+    }
+
+    .loading::after {
+      content: "";
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-left: 12px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .container {
+        padding: 12px;
+      }
+
+      .header {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+      }
+
+      .controls {
+        flex-direction: column;
+      }
+
+      .auto-refresh {
+        margin-left: 0;
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <h1>Auto Company 控制台</h1>
+      <div class="status-badge" id="statusBadge">
+        <span class="dot"></span>
+        <span id="statusText">加载中...</span>
+      </div>
+    </header>
+
+    <!-- Controls -->
+    <section class="controls">
+      <button class="btn btn-primary" id="btnStart">▶ 启动</button>
+      <button class="btn btn-danger" id="btnStop">■ 停止</button>
+      <button class="btn btn-secondary" id="btnRefresh">↻ 刷新</button>
+
+      <select id="engineSelect" style="background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border); padding: 10px 16px; border-radius: 8px; font-size: 14px;">
+        <option value="opencode" selected>OpenCode 引擎</option>
+        <option value="qwen">Qwen 引擎</option>
+      </select>
+      
+      <div class="auto-refresh">
+        <label>
+          <input type="checkbox" id="autoRefresh" checked />
+          自动刷新
+        </label>
+        <select id="refreshInterval">
+          <option value="3000">3秒</option>
+          <option value="5000" selected>5秒</option>
+          <option value="10000">10秒</option>
+          <option value="30000">30秒</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Status Cards -->
+    <section class="cards-grid" id="cardsGrid">
+      <article class="card" id="cardLoop">
+        <h3>循环状态</h3>
+        <div class="value" id="loopState">--</div>
+        <div class="meta" id="loopMeta">PID: --</div>
+      </article>
+      <article class="card" id="cardEngine">
+        <h3>运行引擎</h3>
+        <div class="value" id="engineName">--</div>
+        <div class="meta" id="engineMeta">模型: --</div>
+      </article>
+      <article class="card" id="cardCycles">
+        <h3>循环次数</h3>
+        <div class="value" id="cycleCount">--</div>
+        <div class="meta" id="cycleMeta">错误: --</div>
+      </article>
+      <article class="card" id="cardLastRun">
+        <h3>最后运行</h3>
+        <div class="value" id="lastRun">--</div>
+        <div class="meta" id="lastRunMeta">--</div>
+      </article>
+    </section>
+
+    <!-- Main Content -->
+    <section class="main-grid">
+      <!-- Consensus -->
+      <article class="panel">
+        <div class="panel-header">
+          <h3>📋 共识文件</h3>
+          <button class="btn btn-secondary" id="btnConsensus" style="padding: 6px 12px; font-size: 12px;">刷新</button>
+        </div>
+        <div class="panel-body">
+          <div class="consensus-content" id="consensusContent">
+            <div class="loading">加载中</div>
+          </div>
+        </div>
+      </article>
+
+      <!-- State Info -->
+      <article class="panel">
+        <div class="panel-header">
+          <h3>📊 运行状态</h3>
+        </div>
+        <div class="panel-body">
+          <dl class="state-list" id="stateList">
+            <div class="loading">加载中</div>
+          </dl>
+        </div>
+      </article>
+    </section>
+
+    <!-- Log Terminal -->
+    <section class="panel" style="margin-top: 20px;">
+      <div class="panel-header">
+        <h3>📜 实时日志</h3>
+        <button class="btn btn-secondary" id="btnLog" style="padding: 6px 12px; font-size: 12px;">刷新</button>
+      </div>
+      <div class="panel-body">
+        <div class="terminal" id="logTerminal">
+          加载中...
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer style="text-align: center; padding: 30px; color: var(--text-muted); font-size: 13px;">
+      Auto Company Dashboard · macOS Edition · <span id="updateTime">--</span>
+    </footer>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

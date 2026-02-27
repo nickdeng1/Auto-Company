@@ -125,13 +125,14 @@ For monitoring, dashboard, and autostart commands, see [`docs/windows-setup.md`]
 
 | Task | macOS / WSL (Terminal) | Windows (PowerShell) |
 |---|---|---|
-| Start | `make start` | `.\scripts\windows\start-win.ps1` |
+| Start (Codex) | `make start` | `.\scripts\windows\start-win.ps1` |
+| Start (OpenCode) | `./scripts/core/auto-loop-opencode.sh` | N/A |
 | Status | `make status` | `.\scripts\windows\status-win.ps1` |
 | Live logs | `make monitor` | `.\scripts\windows\monitor-win.ps1` |
 | Last cycle output | `make last` | `.\scripts\windows\last-win.ps1` |
 | Cycle summary | `make cycles` | `.\scripts\windows\cycles-win.ps1` |
 | Stop | `make stop` | `.\scripts\windows\stop-win.ps1` |
-| Web dashboard | N/A | `.\scripts\windows\dashboard-win.ps1` |
+| Web dashboard | `python3 dashboard/server-macos.py` | `.\scripts\windows\dashboard-win.ps1` |
 | Install daemon | `make install` | Auto-installed/started by `start-win.ps1` |
 | Uninstall daemon | `make uninstall` | `wsl -d Ubuntu --cd <repo_wsl_path> bash -lc 'make uninstall'` |
 | Pause daemon | `make pause` | `wsl -d Ubuntu --cd <repo_wsl_path> bash -lc 'make pause'` |
@@ -216,9 +217,16 @@ auto-company/
 ├── PROMPT.md              # Per-cycle execution prompt (convergence rules)
 ├── Makefile               # Common command entry
 ├── INDEX.md               # script index + responsibility table
-├── dashboard/             # Local web status dashboard (started via dashboard-win.ps1)
+├── dashboard/             # Local web status dashboard
+│   ├── server-macos.py    # macOS dashboard server
+│   └── ...                # Windows dashboard files
 ├── scripts/
-│   ├── core/              # Core loop and control scripts (auto-loop/monitor/stop)
+│   ├── core/              # Core loop and control scripts
+│   │   ├── auto-loop.sh           # Codex CLI loop
+│   │   ├── auto-loop-opencode.sh  # OpenCode CLI loop
+│   │   ├── auto-loop-qwen.py      # Qwen CLI loop
+│   │   ├── monitor.sh             # Status monitor
+│   │   └── stop-loop.sh           # Stop control
 │   ├── windows/           # Windows entry/guardian/autostart scripts
 │   ├── wsl/               # WSL systemd --user daemon scripts
 │   └── macos/             # macOS launchd daemon scripts
@@ -232,6 +240,32 @@ auto-company/
     ├── skills/            # 30+ reusable skills
     └── settings.json      # Permissions + Agent Teams switch
 ```
+
+## Available Engines
+
+| Engine | Script | CLI Required | Notes |
+|--------|--------|--------------|-------|
+| **Codex** | `auto-loop.sh` | `codex` (OpenAI) | Default engine |
+| **OpenCode** | `auto-loop-opencode.sh` | `opencode` | Alternative engine |
+| **Qwen** | `auto-loop-qwen.py` | Qwen API | Chinese LLM support |
+
+## Web Dashboard (macOS)
+
+The dashboard provides a web UI for monitoring and controlling the loop:
+
+```bash
+# Start dashboard server
+python3 dashboard/server-macos.py --port 8787
+
+# Then open http://127.0.0.1:8787 in browser
+```
+
+Features:
+- Real-time status monitoring
+- Engine selection (OpenCode / Qwen)
+- Start/Stop controls
+- Consensus file preview
+- Live log tail
 
 ## Dependencies
 
