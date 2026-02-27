@@ -98,4 +98,276 @@
 2. **Cycle 2**：选 #1，critic-munger 做 Pre-Mortem，research-thompson 验证市场，cfo-campbell 算账。给出 GO / NO-GO
 3. **Cycle 3+**：GO → 建 repo 开始写代码，禁止继续讨论。NO-GO → 试 #2，全不行就强选一个做
 4. **Cycle 2 之后每轮必须产出实物**（文件、repo、部署），纯讨论禁止
-5. **同一个 Next Action 连续出现 2 轮** → 卡住了，换方向或缩范围直接 ship
+5. **同一个 Next Action 连续出现 2 轮** → 卡住了
+
+---
+
+## 强制验证规则（不可跳过）
+
+### 代码产出必须验证
+
+**任何代码产出，必须执行以下验证流程：**
+
+1. **测试必须跑通**
+   ```bash
+   # Python 项目
+   pytest tests/ -v
+
+   # Node.js 项目
+   npm test
+   ```
+   - 测试不通过 = 产出无效，必须修复后才能标记完成
+   - 测试覆盖核心功能路径
+
+2. **使用 `senior-qa` 技能**
+   - 调用方式：`skill: "senior-qa"`
+   - 让 QA agent 审查代码质量、测试覆盖、边界情况
+
+3. **本地运行验证**
+   - 必须能启动服务：`uvicorn app.main:app` 或 `npm run dev`
+   - 必须能访问健康检查端点
+   - 记录运行日志到 `logs/` 目录
+
+### 部署产出必须验证
+
+**任何部署操作，必须验证可访问性：**
+
+1. **健康检查**
+   ```bash
+   curl -f https://your-deployed-app.com/health
+   ```
+   - 返回 200 = 部署成功
+   - 非 200 或超时 = 部署失败，必须回滚或修复
+
+2. **功能冒烟测试**
+   - 至少测试一个核心 API 端点
+   - 记录响应时间
+
+3. **使用 `devops` 技能**
+   - 调用方式：`skill: "devops"`
+   - 确保 CI/CD 配置正确
+
+### 项目完成门槛
+
+**一个项目标记为"完成"必须满足：**
+
+| 检查项 | 要求 | 验证方式 |
+|--------|------|----------|
+| 测试 | 全部通过 | `pytest -v` 输出 0 exit code |
+| 文档 | README 包含使用说明 | 文件存在且有 Quick Start |
+| 部署 | Dockerfile 或部署脚本存在 | 文件存在 |
+| 运行 | 服务能启动 | 本地 `docker-compose up` 成功 |
+| 代码审查 | QA 已审查 | `logs/activities.jsonl` 有 review 记录 |
+
+**未满足以上条件的产出物状态为 "进行中"，不能标记为"完成"。**
+
+### 周期结束验收清单
+
+每个周期结束前，检查以下清单：
+
+- [ ] 有代码产出？→ 是否跑过测试？
+- [ ] 有部署产出？→ 是否验证可访问？
+- [ ] 声称"完成"？→ 是否满足完成门槛？
+- [ ] 更新了 `logs/activities.jsonl`？
+- [ ] 更新了 `memories/consensus.md`？
+
+**以上任一项未完成，周期不可结束。**
+
+---
+
+## 开发任务流程（推荐使用 dev-* 技能）
+
+**当需要编写代码时，优先使用 dev-* 技能体系：**
+
+### 快速启动
+
+```
+skill: "dev-start" -- 需求描述
+```
+
+系统会自动：
+1. 评估任务复杂度 (L1/L2/L3)
+2. 选择适合的开发流程
+3. 逐阶段执行并验证
+
+### 任务分级
+
+| 级别 | 适用场景 | 阶段数 | 确认点 | 流程 |
+|------|----------|--------|--------|------|
+| **L1** | Bug修复、配置调整、小改动 | 3 | 1 | 快速分析 → 快速实现 → 快速收尾 |
+| **L2** | 新功能、新组件、常规开发 | 5 | 2 | 需求分析 → 技术方案 → 编码计划 → 编码+测试 → 收尾 |
+| **L3** | 新模块、架构重构、跨领域 | 8 | 8 | 完整流程，每阶段确认 |
+| **L3-AUTO** | 确定性高的复杂任务 | 8 | 0 | 全自动执行，异常暂停 |
+
+### 关键技能
+
+| 技能 | 用途 | 调用方式 |
+|------|------|----------|
+| `dev-start` | 启动开发任务 | `skill: "dev-start"` |
+| `dev-grading` | 任务复杂度评估 | 自动调用 |
+| `dev-quality-gate` | 质量门禁检查 | 自动调用 |
+| `dev-ai-review` | 5维度代码审查 | 自动调用 |
+| `dev-auto-flow` | L3全自动执行 | `--l3-auto` 参数 |
+
+### 质量门禁指标
+
+系统自动检查以下指标，总分 ≥60 才能继续：
+
+| 指标 | 权重 | 阈值 |
+|------|------|------|
+| 测试覆盖率 | 30% | ≥70% |
+| AI审查通过 | 25% | 无红色项 |
+| 编译通过 | 20% | 100% |
+| 代码规范 | 15% | ≤5警告 |
+| 方案对齐 | 10% | ≥80% |
+
+### L3-AUTO 自主模式
+
+适用于确定性高的复杂任务，全流程自动执行：
+
+```
+skill: "dev-start --l3-auto 需求描述"
+```
+
+特点：
+- ✅ 无需人工确认，自动执行全部阶段
+- ✅ 每阶段自动质量门禁
+- ⏸ 仅异常时暂停（质量门禁<60分、测试失败、编译错误）
+- 🔄 支持 `dev-resume` 断点恢复
+
+### 示例用法
+
+```
+# L1 简单任务
+skill: "dev-start" 修复日期字段时区问题
+
+# L2 中等任务
+skill: "dev-start" 为表单添加AI按钮字段
+
+# L3 复杂任务
+skill: "dev-start" 重构流程引擎任务调度核心
+
+# L3 全自动
+skill: "dev-start --l3-auto" 实现图片优化API
+
+# 查看进度
+skill: "dev-status"
+
+# 继续下一阶段
+skill: "dev-next"
+
+# 恢复暂停的任务
+skill: "dev-resume"
+```
+
+---
+
+## 文档存放规则（强制）
+
+### 项目文档统一存放
+
+**所有项目相关的产出文档，必须存放在对应项目目录：**
+
+```
+projects/<project>/docs/
+├── pr-faq.md           # CEO 产出
+├── strategy.md         # CEO 产出
+├── decision.md         # CEO 产出
+├── architecture.md     # CTO 产出
+├── adr.md              # CTO 产出
+├── technical-spec.md   # CTO 产出
+├── market-analysis.md  # Research 产出
+├── competitive.md      # Research 产出
+├── pricing-model.md    # CFO 产出
+├── unit-economics.md   # CFO 产出
+├── prd.md              # Product 产出
+├── spec.md             # Product 产出
+├── design-system.md    # UI 产出
+├── deploy-guide.md     # DevOps 产出
+├── launch-plan.md      # Marketing 产出
+└── premortem.md        # Critic 产出
+```
+
+### 禁止的存放位置
+
+**❌ 禁止在以下位置存放项目相关文档：**
+
+```
+docs/ceo/           # ❌ 禁止
+docs/cto/           # ❌ 禁止
+docs/research/      # ❌ 禁止
+docs/cfo/           # ❌ 禁止
+docs/product/       # ❌ 禁止
+... 其他角色目录
+```
+
+### 允许的 docs/ 目录用途
+
+`docs/` 目录仅用于：
+
+| 目录 | 用途 |
+|------|------|
+| `docs/company/` | 公司级运营文档（非项目特定） |
+| `docs/archived/` | 废弃项目归档 |
+| `docs/*.md` | 项目无关的通用文档 |
+
+### 周期日志存放
+
+周期执行日志存放在：
+
+```
+logs/cycles/        # 周期日志
+logs/activities.jsonl  # Agent 活动记录
+```
+
+### 归档工具
+
+如果发现文档散落在错误位置，使用归档工具：
+
+```
+skill: "project-archive"          # 完整归档
+skill: "project-archive --dry-run" # 预览模式
+skill: "project-archive --clean"   # 归档并删除原文件
+```
+
+### 项目关键词映射
+
+| 项目名 | 关键词匹配 |
+|--------|------------|
+| `emailguard` | emailguard, email-validation, email-validation |
+| `devpulse` | devpulse, developer-monitoring, status-page |
+| `image-api` | image-api, image-optimization |
+| `docuflow` | docuflow, documentation-generator |
+
+### 示例
+
+**正确 ✅：**
+```
+projects/emailguard/docs/market-analysis.md
+projects/devpulse/docs/pr-faq.md
+projects/image-api/docs/adr.md
+```
+
+**错误 ❌：**
+```
+docs/research/emailguard-market-analysis.md
+docs/ceo/devpulse-pr-faq.md
+docs/cto/image-api-adr.md
+```
+
+---
+
+## 技能使用要求
+
+以下场景**必须**调用对应技能：
+
+| 场景 | 技能 | 调用方式 |
+|------|------|----------|
+| 开发任务 | `dev-start` | `skill: "dev-start"` |
+| 代码产出 | `senior-qa` | `skill: "senior-qa"` |
+| 部署操作 | `devops` | `skill: "devops"` |
+| 风险评估 | `premortem` | `skill: "premortem"` |
+| 安全审查 | `security-audit` | `skill: "security-audit"` |
+| 文档归档 | `project-archive` | `skill: "project-archive"` |
+
+**技能文件位置：** `.qwen/skills/<skill-name>/SKILL.md`，换方向或缩范围直接 ship
