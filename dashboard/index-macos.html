@@ -373,6 +373,175 @@
       transition: width 0.3s;
     }
 
+    /* Activities Container */
+    .activities-container {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 20px;
+      min-height: 300px;
+    }
+
+    @media (max-width: 768px) {
+      .activities-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Agent Stats Sidebar */
+    .agent-stats {
+      background: var(--bg-secondary);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .agent-stat-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px;
+      border-radius: 6px;
+      margin-bottom: 4px;
+      transition: background 0.2s;
+    }
+
+    .agent-stat-item:hover {
+      background: var(--bg-card);
+    }
+
+    .agent-stat-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .agent-name {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .agent-count {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Agent Avatar */
+    .agent-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 600;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .agent-avatar.small {
+      width: 28px;
+      height: 28px;
+      font-size: 12px;
+    }
+
+    /* Activities Timeline */
+    .activities-timeline {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .activity-item {
+      background: var(--bg-secondary);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 10px;
+      border-left: 3px solid var(--accent);
+    }
+
+    .activity-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .activity-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .activity-agent {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .activity-action {
+      font-size: 12px;
+      padding: 2px 8px;
+      background: var(--bg-card);
+      border-radius: 4px;
+    }
+
+    .activity-time {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .activity-cycle {
+      margin-left: auto;
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--bg-card);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .activity-content {
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .activity-input,
+    .activity-output,
+    .activity-file {
+      margin: 4px 0;
+      padding-left: 12px;
+      border-left: 2px solid var(--border);
+    }
+
+    .activity-file code {
+      background: var(--bg-card);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--accent);
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+    }
+
+    .empty-state p {
+      margin: 8px 0;
+    }
+
+    .empty-state .hint {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .hint {
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
     /* Loading */
     .loading {
       display: flex;
@@ -507,6 +676,29 @@
           </dl>
         </div>
       </article>
+    </section>
+
+    <!-- Agent Activities -->
+    <section class="panel" style="margin-top: 20px;">
+      <div class="panel-header">
+        <h3>🤖 Agent 活动</h3>
+        <span id="activitiesCount" style="color: var(--text-muted); font-size: 13px;">0 条记录</span>
+      </div>
+      <div class="panel-body">
+        <div class="activities-container">
+          <!-- Agent Stats Sidebar -->
+          <div class="agent-stats" id="agentStats">
+            <p class="hint">暂无统计数据</p>
+          </div>
+          <!-- Activities Timeline -->
+          <div class="activities-timeline" id="activitiesTimeline">
+            <div class="empty-state">
+              <p>暂无 Agent 活动记录</p>
+              <p class="hint">等待下一个工作周期开始...</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- Log Terminal -->

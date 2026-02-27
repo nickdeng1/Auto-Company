@@ -57,9 +57,11 @@ PROMPT_FILE = REPO_ROOT / "PROMPT.md"
 STOP_FLAG = REPO_ROOT / ".auto-loop-stop"
 PAUSE_FLAG = REPO_ROOT / ".auto-loop-paused"
 PROGRESS_FILE = REPO_ROOT / ".progress.json"
+ACTIVITIES_FILE = REPO_ROOT / "logs" / "activities.jsonl"
 
 # Scripts
-QWEN_SCRIPT = REPO_ROOT / "scripts" / "core" / "auto-loop-qwen.py"
+QWEN_SCRIPT = REPO_ROOT / "scripts" / "core" / "auto-loop-qwen.sh"
+QWEN_SCRIPT_PY = REPO_ROOT / "scripts" / "core" / "auto-loop-qwen.py"
 OPENCODE_SCRIPT = REPO_ROOT / "scripts" / "core" / "auto-loop-opencode.sh"
 STOP_SCRIPT = REPO_ROOT / "scripts" / "core" / "stop-loop.sh"
 MONITOR_SCRIPT = REPO_ROOT / "scripts" / "core" / "monitor.sh"
@@ -97,6 +99,55 @@ def read_tail(path: Path, lines: int = 120) -> str:
     return "\n".join(rows[-lines:])
 
 
+def find_latest_cycle_log(engine: str) -> Path | None:
+    """Find the latest cycle log file for the given engine."""
+    log_dir = REPO_ROOT / "logs"
+    if not log_dir.exists():
+        return None
+
+    # Pattern based on engine
+    if engine == "opencode":
+        pattern = "cycle-opencode-*.log"
+    elif engine == "qwen":
+        pattern = "cycle-qwen-*.log"
+    else:
+        pattern = "cycle-*.log"
+
+    # Find all matching files
+    matches = list(log_dir.glob(pattern))
+    if not matches:
+        return None
+
+    # Return the most recent one
+    return max(matches, key=lambda p: p.stat().st_mtime)
+
+
+def read_combined_logs(engine: str, main_lines: int = 50, cycle_lines: int = 500) -> str:
+    """Read combined logs: main log + latest cycle log."""
+    parts = []
+
+    # Read main log
+    if engine == "opencode":
+        main_log = OPENCODE_LOG_FILE if OPENCODE_LOG_FILE.exists() else CODEX_LOG_FILE
+    elif engine == "qwen":
+        main_log = QWEN_LOG_FILE
+    else:
+        main_log = CODEX_LOG_FILE
+
+    main_content = read_tail(main_log, main_lines)
+    if main_content:
+        parts.append(f"{'='*60}\n[主日志 - {main_log.name}]\n{'='*60}\n{main_content}")
+
+    # Read latest cycle log
+    cycle_log = find_latest_cycle_log(engine)
+    if cycle_log:
+        cycle_content = read_tail(cycle_log, cycle_lines)
+        if cycle_content:
+            parts.append(f"\n{'='*60}\n[周期日志 - {cycle_log.name}]\n{'='*60}\n{cycle_content}")
+
+    return "\n".join(parts)
+
+
 def read_json_file(path: Path, fallback: dict = None) -> dict:
     """Read JSON file."""
     if fallback is None:
@@ -105,6 +156,47 @@ def read_json_file(path: Path, fallback: dict = None) -> dict:
         return json.loads(path.read_text(encoding="utf-8"))
     except (FileNotFoundError, json.JSONDecodeError):
         return fallback
+
+
+def read_activities(limit: int = 100) -> list[dict]:
+    """Read activities from JSONL file, newest first."""
+    activities = []
+    if not ACTIVITIES_FILE.exists():
+        return activities
+
+    try:
+        lines = ACTIVITIES_FILE.read_text(encoding="utf-8").strip().split("\n")
+        for line in reversed(lines[-limit:]):
+            line = line.strip()
+            if line:
+                try:
+                    activities.append(json.loads(line))
+                except json.JSONDecodeError:
+                    continue
+    except Exception:
+        pass
+
+    return activities
+
+
+def get_agent_stats(activities: list[dict]) -> dict:
+    """Get statistics about agent activities."""
+    stats = {}
+    for act in activities:
+        agent = act.get("agent", "unknown")
+        if agent not in stats:
+            stats[agent] = {
+                "role": act.get("role", ""),
+                "count": 0,
+                "actions": {},
+                "lastActive": ""
+            }
+        stats[agent]["count"] += 1
+        action = act.get("action", "unknown")
+        stats[agent]["actions"][action] = stats[agent]["actions"].get(action, 0) + 1
+        stats[agent]["lastActive"] = act.get("ts", "")
+
+    return stats
 
 
 def parse_state_file(path: Path) -> dict[str, str]:
@@ -236,8 +328,15 @@ def gather_status() -> dict[str, Any]:
     else:
         log_file = CODEX_LOG_FILE
 
+    # Read combined logs (main + cycle)
+    combined_log = read_combined_logs(active_engine, main_lines=50, cycle_lines=500)
+
     # Read progress
     progress = read_json_file(PROGRESS_FILE)
+
+    # Read activities
+    activities = read_activities(limit=100)
+    agent_stats = get_agent_stats(activities)
 
     # Check stop/pause flags
     stop_requested = STOP_FLAG.exists()
@@ -269,7 +368,9 @@ def gather_status() -> dict[str, Any]:
         "state": active_state,
         "progress": progress,
         "consensus": read_text_file(CONSENSUS_FILE, "(no consensus file)")[:5000],
-        "logTail": read_tail(log_file, lines=200),
+        "logTail": combined_log,
+        "activities": activities,
+        "agentStats": agent_stats,
         "flags": {
             "stop": stop_requested,
             "pause": paused,
@@ -361,18 +462,31 @@ def start_loop(engine: str = None) -> dict:
                 start_new_session=True
             )
         elif engine == "qwen":
-            # Start Qwen loop (Python)
-            if not QWEN_SCRIPT.exists():
-                return {"ok": False, "error": f"Qwen script not found: {QWEN_SCRIPT}"}
+            # Start Qwen loop (shell script preferred, Python fallback)
+            script_to_use = QWEN_SCRIPT if QWEN_SCRIPT.exists() else QWEN_SCRIPT_PY
+            if not script_to_use.exists():
+                return {"ok": False, "error": f"Qwen script not found: {QWEN_SCRIPT} or {QWEN_SCRIPT_PY}"}
 
-            subprocess.Popen(
-                ["nohup", sys.executable, str(QWEN_SCRIPT)],
-                stdout=open(log_dir / "qwen-stdout.log", "a"),
-                stderr=open(log_dir / "qwen-stderr.log", "a"),
-                stdin=subprocess.DEVNULL,
-                cwd=str(REPO_ROOT),
-                start_new_session=True
-            )
+            if script_to_use.suffix == ".sh":
+                # Shell script
+                subprocess.Popen(
+                    ["nohup", "bash", str(script_to_use)],
+                    stdout=open(log_dir / "qwen-stdout.log", "a"),
+                    stderr=open(log_dir / "qwen-stderr.log", "a"),
+                    stdin=subprocess.DEVNULL,
+                    cwd=str(REPO_ROOT),
+                    start_new_session=True
+                )
+            else:
+                # Python script
+                subprocess.Popen(
+                    ["nohup", sys.executable, str(script_to_use)],
+                    stdout=open(log_dir / "qwen-stdout.log", "a"),
+                    stderr=open(log_dir / "qwen-stderr.log", "a"),
+                    stdin=subprocess.DEVNULL,
+                    cwd=str(REPO_ROOT),
+                    start_new_session=True
+                )
         else:
             return {"ok": False, "error": f"Unknown engine: {engine}"}
 
@@ -518,6 +632,18 @@ class DashboardHandler(BaseHTTPRequestHandler):
             self._json({
                 "timestamp": datetime.now(timezone.utc).isoformat(),
                 "progress": read_json_file(PROGRESS_FILE)
+            })
+            return
+
+        if path == "/api/activities":
+            qs = parse_qs(parsed.query)
+            limit = int(qs.get("limit", ["100"])[0])
+            activities = read_activities(limit)
+            agent_stats = get_agent_stats(activities)
+            self._json({
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "activities": activities,
+                "agentStats": agent_stats
             })
             return
         

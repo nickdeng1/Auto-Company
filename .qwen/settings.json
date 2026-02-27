@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "defaultMode": "bypassPermissions",
+    "allow": [
+      "WebSearch",
+      "Bash",
+      "Edit",
+      "Write",
+      "WebFetch",
+      "NotebookEdit",
+      "Skill",
+      "Task"
+    ],
+    "ask": [],
+    "deny": []
+  },
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
+  "enableAllProjectMcpServers": true,
+  "$version": 3
+}

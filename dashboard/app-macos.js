@@ -30,6 +30,11 @@ const els = {
   logTerminal: document.getElementById("logTerminal"),
   updateTime: document.getElementById("updateTime"),
 
+  // Activities
+  activitiesTimeline: document.getElementById("activitiesTimeline"),
+  agentStats: document.getElementById("agentStats"),
+  activitiesCount: document.getElementById("activitiesCount"),
+
   // Controls
   btnStart: document.getElementById("btnStart"),
   btnStop: document.getElementById("btnStop"),
@@ -44,6 +49,44 @@ const els = {
 // State
 let autoTimer = null;
 let lastData = null;
+
+// Action labels
+const ACTION_LABELS = {
+  propose: "提出方案",
+  review: "审查评估",
+  analyze: "分析调研",
+  decision: "做出决策",
+  build: "编码构建",
+  deploy: "部署发布",
+};
+
+// Action colors
+const ACTION_COLORS = {
+  propose: "#3b82f6",
+  review: "#f59e0b",
+  analyze: "#8b5cf6",
+  decision: "#ef4444",
+  build: "#10b981",
+  deploy: "#06b6d4",
+};
+
+// Agent colors
+const AGENT_COLORS = {
+  "ceo-bezos": "#ff6b35",
+  "cto-vogels": "#004e89",
+  "critic-munger": "#7209b7",
+  "product-norman": "#f72585",
+  "ui-duarte": "#4cc9f0",
+  "interaction-cooper": "#4895ef",
+  "fullstack-dhh": "#560bad",
+  "qa-bach": "#00bbf9",
+  "devops-hightower": "#00f5d4",
+  "marketing-godin": "#9b5de5",
+  "operations-pg": "#f15bb5",
+  "sales-ross": "#fee440",
+  "cfo-campbell": "#00cfcf",
+  "research-thompson": "#2ec4b6",
+};
 
 /**
  * Escape HTML to prevent XSS
@@ -200,10 +243,113 @@ function formatShortTime(isoText) {
 function updateStatusBadge(running, state) {
   els.statusBadge.className = `status-badge ${running ? "running" : "stopped"}`;
   els.statusText.textContent = running ? "运行中" : "已停止";
-  
+
   // Update card styles
   els.cardLoop.className = `card ${running ? "good" : "warn"}`;
   els.cardEngine.className = `card ${running ? "good" : ""}`;
+}
+
+/**
+ * Render agent avatar
+ */
+function renderAgentAvatar(agent, role) {
+  const color = AGENT_COLORS[agent] || "#6b7280";
+  const initial = (role || agent || "?").charAt(0).toUpperCase();
+  return `<div class="agent-avatar" style="background-color: ${color}">${initial}</div>`;
+}
+
+/**
+ * Render activities timeline
+ */
+function renderActivities(activities) {
+  if (!activities || activities.length === 0) {
+    if (els.activitiesTimeline) {
+      els.activitiesTimeline.innerHTML = `
+        <div class="empty-state">
+          <p>暂无 Agent 活动记录</p>
+          <p class="hint">等待下一个工作周期开始...</p>
+        </div>
+      `;
+    }
+    if (els.activitiesCount) {
+      els.activitiesCount.textContent = "0 条记录";
+    }
+    return;
+  }
+
+  if (els.activitiesCount) {
+    els.activitiesCount.textContent = `${activities.length} 条记录`;
+  }
+
+  if (!els.activitiesTimeline) return;
+
+  const html = activities.map((act, idx) => {
+    const agent = act.agent || "unknown";
+    const role = act.role || agent;
+    const action = act.action || "unknown";
+    const actionLabel = ACTION_LABELS[action] || action;
+    const actionColor = ACTION_COLORS[action] || "#6b7280";
+    const time = formatShortTime(act.ts);
+    const input = act.input || "";
+    const output = act.output || "";
+    const file = act.file || "";
+    const cycle = act.cycle || "?";
+
+    return `
+      <div class="activity-item">
+        <div class="activity-header">
+          ${renderAgentAvatar(agent, role)}
+          <div class="activity-meta">
+            <span class="activity-agent">${escapeHtml(role)}</span>
+            <span class="activity-action" style="color: ${actionColor}">${escapeHtml(actionLabel)}</span>
+            <span class="activity-time">${escapeHtml(time)}</span>
+          </div>
+          <span class="activity-cycle">Cycle #${escapeHtml(String(cycle))}</span>
+        </div>
+        <div class="activity-content">
+          ${input ? `<div class="activity-input"><strong>输入:</strong> ${escapeHtml(input)}</div>` : ""}
+          ${output ? `<div class="activity-output"><strong>输出:</strong> ${escapeHtml(output)}</div>` : ""}
+          ${file ? `<div class="activity-file"><strong>文件:</strong> <code>${escapeHtml(file)}</code></div>` : ""}
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  els.activitiesTimeline.innerHTML = html;
+}
+
+/**
+ * Render agent stats
+ */
+function renderAgentStats(stats) {
+  if (!els.agentStats || !stats) return;
+
+  const agents = Object.entries(stats).sort((a, b) => b[1].count - a[1].count);
+
+  if (agents.length === 0) {
+    els.agentStats.innerHTML = '<p class="hint">暂无统计数据</p>';
+    return;
+  }
+
+  const html = agents.map(([agent, data]) => {
+    const color = AGENT_COLORS[agent] || "#6b7280";
+    const initial = (data.role || agent).charAt(0).toUpperCase();
+    const actions = Object.entries(data.actions || {})
+      .map(([a, c]) => `${ACTION_LABELS[a] || a}: ${c}`)
+      .join(", ");
+
+    return `
+      <div class="agent-stat-item">
+        <div class="agent-avatar small" style="background-color: ${color}">${initial}</div>
+        <div class="agent-stat-info">
+          <span class="agent-name">${escapeHtml(data.role || agent)}</span>
+          <span class="agent-count">${data.count} 次活动</span>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  els.agentStats.innerHTML = html;
 }
 
 /**
@@ -249,43 +395,47 @@ async function fetchStatus() {
     const res = await fetch("/api/status", { cache: "no-store" });
     const data = await res.json();
     lastData = data;
-    
+
     // Update status badge
     updateStatusBadge(data.loop?.running, data.loop?.state);
-    
+
     // Update cards
     const loop = data.loop || {};
-    
+
     els.loopState.textContent = loop.state === "running" ? "运行中" : "已停止";
     els.loopMeta.textContent = `PID: ${loop.pid || "--"} | 循环: ${loop.loopCount || "0"}`;
-    
+
     els.engineName.textContent = (data.engine?.active || "qwen").toUpperCase();
     els.engineMeta.textContent = `模型: ${loop.model || "默认"}`;
-    
+
     els.cycleCount.textContent = loop.loopCount || "0";
     els.cycleMeta.textContent = `错误: ${loop.errorCount || "0"}`;
-    
+
     els.lastRun.textContent = formatShortTime(loop.lastRun);
     els.lastRunMeta.textContent = loop.status || "--";
-    
+
     // Update state list
     renderStateList(data);
-    
+
     // Update consensus
     if (data.consensus) {
       els.consensusContent.innerHTML = renderMarkdown(data.consensus);
     }
-    
+
     // Update log
     if (data.logTail) {
       els.logTerminal.textContent = data.logTail;
       // Auto scroll to bottom
       els.logTerminal.scrollTop = els.logTerminal.scrollHeight;
     }
-    
+
+    // Update activities
+    renderActivities(data.activities || []);
+    renderAgentStats(data.agentStats || {});
+
     // Update time
     els.updateTime.textContent = `更新: ${formatTime(data.timestamp)}`;
-    
+
   } catch (err) {
     console.error("Failed to fetch status:", err);
     els.statusText.textContent = "连接失败";

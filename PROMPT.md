@@ -21,7 +21,35 @@
 
 读 `.claude/skills/team/SKILL.md`，按里面的流程组建团队执行任务。每轮选 3-5 个最相关的 agent，不要全部拉上。
 
-### 4. 更新共识（必须）
+### 4. 记录活动（必须）
+
+每个参与 Agent **必须**在执行动作时追加一行 JSON 到 `logs/activities.jsonl`：
+
+```json
+{"ts": "2026-02-27T14:00:00Z", "cycle": 1, "agent": "ceo-bezos", "role": "CEO", "action": "propose", "input": "产品方向头脑风暴", "output": "提出 SoloBot 方案", "file": "docs/ceo/2026-02-27-product-proposal.md"}
+```
+
+格式说明：
+- `ts`: ISO 时间戳
+- `cycle`: 当前周期号
+- `agent`: Agent ID（如 ceo-bezos, cto-vogels）
+- `role`: 角色名（如 CEO, CTO）
+- `action`: 动作类型（propose/review/analyze/decision/build/deploy）
+- `input`: 输入内容简要描述
+- `output`: 输出内容简要描述
+- `file`: 产出文件路径（如有）
+
+动作类型说明：
+| action | 说明 |
+|--------|------|
+| propose | 提出方案/想法 |
+| review | 审查/评估 |
+| analyze | 分析/调研 |
+| decision | 做出决策 |
+| build | 编码/构建 |
+| deploy | 部署/发布 |
+
+### 5. 更新共识（必须）
 
 结束前**必须**更新 `memories/consensus.md`，格式：
 
@@ -39,6 +67,14 @@
 
 ## Key Decisions Made
 - [决策 + 理由]
+
+## Agent Activities This Cycle
+
+| Agent | Action | Output |
+|-------|--------|--------|
+| ceo-bezos | propose | 提出产品方向 |
+| cto-vogels | review | 技术可行性评估 |
+| ... | ... | ... |
 
 ## Active Projects
 - [项目]: [状态] — [下一步]
