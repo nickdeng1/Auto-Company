@@ -6,16 +6,17 @@ FastAPI endpoints for email validation
 import time
 from typing import List
 
-from fastapi import APIRouter, HTTPException, Depends, Request
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Depends, HTTPException
 
+from app.config import Settings
 from app.models import (
-    VerifyRequest, VerifyResponse,
-    BatchVerifyRequest, BatchVerifyResponse,
-    HealthResponse, EmailCheckResult, ValidationReason
+    BatchVerifyRequest,
+    BatchVerifyResponse,
+    HealthResponse,
+    VerifyRequest,
+    VerifyResponse,
 )
 from app.validator import EmailValidator
-from app.config import Settings
 
 router = APIRouter()
 
@@ -53,13 +54,13 @@ async def verify_email(
 ):
     """
     Verify a single email address.
-    
+
     Performs multiple validation checks:
     - Syntax validation (RFC 5322)
     - DNS MX record validation
     - Disposable email detection
     - Role-based email detection
-    
+
     Returns detailed results including:
     - Overall validity
     - Individual check results
@@ -67,9 +68,9 @@ async def verify_email(
     - Suggestion for typo corrections
     """
     email = request.email.lower().strip()
-    
+
     valid, reason, checks, score, suggestion = validator.validate_email(email)
-    
+
     return VerifyResponse(
         email=email,
         valid=valid,
@@ -87,9 +88,9 @@ async def verify_batch(
 ):
     """
     Verify multiple email addresses in a single request.
-    
+
     Maximum 1000 emails per batch.
-    
+
     Returns:
     - Total count
     - Valid/invalid counts
@@ -100,14 +101,14 @@ async def verify_batch(
             status_code=400,
             detail="Maximum batch size is 1000 emails"
         )
-    
+
     results: List[VerifyResponse] = []
     valid_count = 0
-    
+
     for email in request.emails:
         email = email.lower().strip()
         valid, reason, checks, score, suggestion = validator.validate_email(email)
-        
+
         results.append(VerifyResponse(
             email=email,
             valid=valid,
@@ -116,10 +117,10 @@ async def verify_batch(
             score=score,
             suggestion=suggestion
         ))
-        
+
         if valid:
             valid_count += 1
-    
+
     return BatchVerifyResponse(
         total=len(results),
         valid=valid_count,
@@ -134,7 +135,7 @@ async def list_disposable_domains(
 ):
     """
     List all known disposable email domains.
-    
+
     Useful for client-side validation.
     """
     return {
@@ -149,7 +150,7 @@ async def list_role_prefixes(
 ):
     """
     List all known role-based email prefixes.
-    
+
     Useful for client-side validation.
     """
     return {

@@ -4,20 +4,20 @@ Main FastAPI application
 """
 
 from fastapi import FastAPI, Request, status
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from fastapi.exceptions import RequestValidationError
 
-from app.routes import router
 from app.config import Settings
+from app.routes import router
 
 
 def create_app(settings: Settings = None) -> FastAPI:
     """Create and configure FastAPI application"""
-    
+
     if settings is None:
         settings = Settings()
-    
+
     app = FastAPI(
         title=settings.app_name,
         description="""
@@ -56,7 +56,7 @@ curl -X POST http://localhost:8000/v1/verify \\
         redoc_url="/redoc",
         openapi_url="/openapi.json"
     )
-    
+
     # CORS middleware
     app.add_middleware(
         CORSMiddleware,
@@ -65,10 +65,10 @@ curl -X POST http://localhost:8000/v1/verify \\
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    
+
     # Include API routes
     app.include_router(router)
-    
+
     # Exception handlers
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(request: Request, exc: RequestValidationError):
@@ -80,7 +80,7 @@ curl -X POST http://localhost:8000/v1/verify \\
                 "body": exc.body
             }
         )
-    
+
     @app.exception_handler(Exception)
     async def general_exception_handler(request: Request, exc: Exception):
         return JSONResponse(
@@ -90,7 +90,7 @@ curl -X POST http://localhost:8000/v1/verify \\
                 "detail": str(exc) if settings.debug else "An unexpected error occurred"
             }
         )
-    
+
     @app.get("/", tags=["Root"])
     async def root():
         """Root endpoint with API info"""
@@ -100,7 +100,7 @@ curl -X POST http://localhost:8000/v1/verify \\
             "docs": "/docs",
             "health": "/health"
         }
-    
+
     return app
 
 

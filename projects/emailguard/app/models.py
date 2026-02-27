@@ -1,6 +1,7 @@
-from pydantic import BaseModel, EmailStr, Field
-from typing import List, Optional, Dict
 from enum import Enum
+from typing import List, Optional
+
+from pydantic import BaseModel, EmailStr, Field
 
 
 class ValidationReason(str, Enum):
