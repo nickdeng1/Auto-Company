@@ -98,24 +98,43 @@ Team composition rules: `.claude/skills/team/SKILL.md`.
 
 ## Documentation Map
 
-Each agent stores outputs under `docs/<role>/`:
+**项目文档存放在对应项目目录：**
 
-| Agent | Directory | Typical Outputs |
-|-------|------|----------|
-| `ceo-bezos` | `docs/ceo/` | PR/FAQ, strategic memos, decision records |
-| `cto-vogels` | `docs/cto/` | ADRs, system design, technical selection notes |
-| `critic-munger` | `docs/critic/` | Inversion reports, pre-mortems, veto logs |
-| `product-norman` | `docs/product/` | Product specs, personas, usability analysis |
-| `ui-duarte` | `docs/ui/` | Design systems, visual guidelines, color systems |
-| `interaction-cooper` | `docs/interaction/` | Interaction flows, personas, navigation structures |
-| `fullstack-dhh` | `docs/fullstack/` | implementation notes, code docs, refactor logs |
-| `qa-bach` | `docs/qa/` | Test strategies, bug reports, quality assessments |
-| `devops-hightower` | `docs/devops/` | Deployment configs, runbooks, monitoring design |
-| `marketing-godin` | `docs/marketing/` | Positioning, content strategy, campaign plans |
-| `operations-pg` | `docs/operations/` | Growth experiments, retention analysis, ops metrics |
-| `sales-ross` | `docs/sales/` | Funnel analysis, conversion plans, pricing playbooks |
-| `cfo-campbell` | `docs/cfo/` | Financial models, pricing analyses, unit economics |
-| `research-thompson` | `docs/research/` | Market/competitor/trend intelligence |
+```
+projects/<project>/docs/
+├── pr-faq.md           # CEO 产出
+├── strategy.md         # CEO 产出
+├── decision.md         # CEO 产出
+├── architecture.md     # CTO 产出
+├── adr.md              # CTO 产出
+├── technical-spec.md   # CTO 产出
+├── market-analysis.md  # Research 产出
+├── competitive.md      # Research 产出
+├── pricing-model.md    # CFO 产出
+├── unit-economics.md   # CFO 产出
+├── prd.md              # Product 产出
+├── spec.md             # Product 产出
+├── design-system.md    # UI 产出
+├── deploy-guide.md     # DevOps 产出
+├── launch-plan.md      # Marketing 产出
+└── premortem.md        # Critic 产出
+```
+
+**❌ 禁止在 `docs/<role>/` 存放项目相关文档。**
+
+**`docs/` 目录仅用于：**
+- `docs/company/` - 公司级运营文档
+- `docs/archived/` - 废弃项目归档
+- `docs/*.md` - 项目无关的通用文档
+
+**项目关键词映射：**
+
+| 项目名 | 关键词匹配 |
+|--------|------------|
+| `emailguard` | emailguard, email-validation |
+| `devpulse` | devpulse, developer-monitoring |
+| `image-api` | image-api, image-optimization |
+| `docuflow` | docuflow, documentation-generator |
 
 ## Tooling
 

@@ -76,6 +76,11 @@
 | cto-vogels | review | 技术可行性评估 |
 | ... | ... | ... |
 
+## Validation Status
+- senior-qa: ✅ CALLED / ❌ NOT CALLED
+- test-evidence: ✅ CREATED / ❌ MISSING
+- status: ✅ PASS / ❌ FAIL
+
 ## Active Projects
 - [项目]: [状态] — [下一步]
 
@@ -91,6 +96,8 @@
 ## Open Questions
 - [待思考的问题]
 ```
+
+**⚠️ 重要：Validation Status 为 FAIL 时，下个周期必须重试当前任务，不可跳过。**
 
 ## 收敛规则（强制）
 
@@ -115,18 +122,44 @@
 
    # Node.js 项目
    npm test
+
+   # 前端项目 (HTML/JS)
+   # 创建 test-checklist.md 手动测试清单
    ```
    - 测试不通过 = 产出无效，必须修复后才能标记完成
    - 测试覆盖核心功能路径
+   - **前端项目必须创建 `test-checklist.md`**，包含功能测试项
 
-2. **使用 `senior-qa` 技能**
+2. **必须调用 `senior-qa` 技能**
    - 调用方式：`skill: "senior-qa"`
    - 让 QA agent 审查代码质量、测试覆盖、边界情况
+   - **未调用 senior-qa = 验证未完成，周期不可结束**
+   - 活动日志必须记录：`"action": "review"` + `"output": "senior-qa 审查结果"`
 
 3. **本地运行验证**
-   - 必须能启动服务：`uvicorn app.main:app` 或 `npm run dev`
-   - 必须能访问健康检查端点
+   - 后端服务：`uvicorn app.main:app` 或 `npm run dev`
+   - 前端项目：`open index.html` 或 `python -m http.server`
+   - 必须验证核心功能可运行
    - 记录运行日志到 `logs/` 目录
+
+4. **前端项目额外要求**
+   - 创建 `projects/<project>/test-checklist.md`
+   - 包含：功能清单、浏览器兼容性、边界情况
+   - 手动执行测试并在清单上打勾
+   - 示例：
+     ```markdown
+     # Test Checklist - Minesweeper
+
+     ## 核心功能
+     - [x] 左键揭开格子
+     - [x] 右键标记旗帜
+     - [x] 计时器工作正常
+     - [x] 胜利/失败判定正确
+
+     ## 边界情况
+     - [x] 首次点击不会踩雷
+     - [x] 空白区域自动展开
+     ```
 
 ### 部署产出必须验证
 
@@ -153,25 +186,73 @@
 
 | 检查项 | 要求 | 验证方式 |
 |--------|------|----------|
-| 测试 | 全部通过 | `pytest -v` 输出 0 exit code |
+| 测试 | 全部通过 | `pytest -v` 输出 0 exit code 或 `test-checklist.md` 完成 |
 | 文档 | README 包含使用说明 | 文件存在且有 Quick Start |
 | 部署 | Dockerfile 或部署脚本存在 | 文件存在 |
-| 运行 | 服务能启动 | 本地 `docker-compose up` 成功 |
-| 代码审查 | QA 已审查 | `logs/activities.jsonl` 有 review 记录 |
+| 运行 | 服务能启动 | 本地 `docker-compose up` 成功或浏览器打开正常 |
+| 代码审查 | QA 已审查 | **必须调用 `senior-qa` 技能** |
+| 活动记录 | review 记录存在 | `logs/activities.jsonl` 有 `senior-qa` 调用记录 |
 
 **未满足以上条件的产出物状态为 "进行中"，不能标记为"完成"。**
 
 ### 周期结束验收清单
 
-每个周期结束前，检查以下清单：
+每个周期结束前，**必须**检查以下清单：
 
-- [ ] 有代码产出？→ 是否跑过测试？
+- [ ] 有代码产出？→ 是否跑过测试/创建测试清单？
+- [ ] 有代码产出？→ **是否调用了 `senior-qa` 技能？** ⚠️ 强制
 - [ ] 有部署产出？→ 是否验证可访问？
 - [ ] 声称"完成"？→ 是否满足完成门槛？
-- [ ] 更新了 `logs/activities.jsonl`？
+- [ ] 更新了 `logs/activities.jsonl`？→ 是否有 `senior-qa` review 记录？
 - [ ] 更新了 `memories/consensus.md`？
 
-**以上任一项未完成，周期不可结束。**
+**以上任一项未完成，周期不可结束。特别是 `senior-qa` 调用为强制项。**
+
+---
+
+## 执行顺序（强制）
+
+**Agent 必须按以下顺序执行，违反顺序 = 周期失败：**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  1. 读取共识，确定任务                                        │
+│  2. 执行开发任务（代码、文档）                                │
+│  3. ⚠️ 调用 senior-qa 技能审查代码                           │
+│  4. 创建测试证据 (test-checklist.md 或 tests/)               │
+│  5. 记录活动到 activities.jsonl                              │
+│  6. 更新共识（标记 Validation: PASS）                        │
+│  7. 周期结束                                                 │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 验证必须在共识更新前完成
+
+```markdown
+# ❌ 错误顺序
+1. 写代码
+2. 更新共识（声称完成）
+3. 调用 senior-qa  ← 太晚了！
+
+# ✅ 正确顺序
+1. 写代码
+2. 调用 senior-qa
+3. 创建 test-checklist.md
+4. 更新共识（Validation: PASS）
+```
+
+### 共识验证状态字段
+
+每个周期必须在共识中记录验证状态：
+
+```markdown
+## Validation Status
+- senior-qa: ✅ CALLED / ❌ NOT CALLED
+- test-checklist: ✅ CREATED / ❌ MISSING
+- status: ✅ PASS / ❌ FAIL
+```
+
+**如果 Validation Status 为 FAIL，下个周期必须重试该任务。**
 
 ---
 

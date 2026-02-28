@@ -13,7 +13,7 @@
 # === Project Paths (set once at load time) ===
 # These are computed when config.sh is sourced
 _CONFIG_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_DIR="$(cd "$_CONFIG_SCRIPT_DIR/../.." && pwd)"
+PROJECT_DIR="$(cd "$_CONFIG_SCRIPT_DIR/../../.." && pwd)"
 LIB_DIR="$_CONFIG_SCRIPT_DIR"
 LOG_DIR="$PROJECT_DIR/logs"
 CONSENSUS_FILE="$PROJECT_DIR/memories/consensus.md"

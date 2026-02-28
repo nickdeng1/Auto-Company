@@ -97,6 +97,19 @@ while true; do
     # Process result
     process_cycle_result "$loop_count" "$cycle_log" "$RESULT_TEXT"
 
+    # Validate cycle quality gates (if cycle succeeded)
+    if [ $? -eq 0 ]; then
+        export CYCLE="$loop_count"
+        if ! "$SCRIPT_DIR/validate-cycle.sh"; then
+            log_cycle "$loop_count" "FAIL" "Validation failed: missing senior-qa review or test evidence"
+            # Don't commit consensus if validation failed
+            save_state "idle"
+            log_cycle "$loop_count" "WAIT" "Sleeping ${LOOP_INTERVAL}s before next cycle..."
+            sleep "${LOOP_INTERVAL}"
+            continue
+        fi
+    fi
+
     # Commit consensus if cycle succeeded
     git_commit_consensus "$loop_count" 2>/dev/null || true
 
