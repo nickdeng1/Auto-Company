@@ -2,7 +2,7 @@ name: Deploy WebhookRelay Landing Page
 
 on:
   push:
-    branches: [develop]
+    branches: [main, develop]
     paths:
       - 'projects/webhookrelay/**'
   workflow_dispatch:
