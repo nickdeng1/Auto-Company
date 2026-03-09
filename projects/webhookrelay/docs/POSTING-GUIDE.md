@@ -4,6 +4,18 @@
 
 Browser automation is not available on this system. Please post manually using the content below.
 
+## 📊 UTM Tracking
+
+Each channel has unique UTM parameters to track signup sources. When posting, use the specific URL for that channel.
+
+| Channel | URL |
+|---------|-----|
+| HN Show HN | `https://nickdeng1.github.io/Auto-Company/?utm_source=hackernews&utm_medium=post&utm_campaign=launch` |
+| Reddit r/SideProject | `https://nickdeng1.github.io/Auto-Company/?utm_source=reddit&utm_medium=post&utm_campaign=launch&utm_content=sideproject` |
+| Reddit r/webdev | `https://nickdeng1.github.io/Auto-Company/?utm_source=reddit&utm_medium=post&utm_campaign=launch&utm_content=webdev` |
+| Reddit r/SaaS | `https://nickdeng1.github.io/Auto-Company/?utm_source=reddit&utm_medium=post&utm_campaign=launch&utm_content=saas` |
+| Indie Hackers | `https://nickdeng1.github.io/Auto-Company/?utm_source=indiehackers&utm_medium=post&utm_campaign=launch` |
+
 ---
 
 ## 1. Hacker News - Show HN (POST FIRST)
@@ -89,7 +101,7 @@ Looking For:
 - What features would make you switch from your current solution?
 - Any webhook horror stories to share?
 
-Check it out: https://nickdeng1.github.io/Auto-Company/
+Check it out: https://nickdeng1.github.io/Auto-Company/?utm_source=reddit&utm_medium=post&utm_campaign=launch&utm_content=sideproject
 
 Thanks for reading!
 ```
@@ -135,7 +147,7 @@ Tech Stack:
 Status:
 Landing page live, collecting waitlist. Would love feedback from fellow web devs!
 
-Link: https://nickdeng1.github.io/Auto-Company/
+Link: https://nickdeng1.github.io/Auto-Company/?utm_source=reddit&utm_medium=post&utm_campaign=launch&utm_content=webdev
 
 Questions:
 1. What's your biggest webhook pain point?
@@ -190,7 +202,7 @@ Questions for r/SaaS:
 2. Would you pay for this? At what price point?
 3. What features are must-haves vs nice-to-haves?
 
-Landing page: https://nickdeng1.github.io/Auto-Company/
+Landing page: https://nickdeng1.github.io/Auto-Company/?utm_source=reddit&utm_medium=post&utm_campaign=launch&utm_content=saas
 
 Thanks in advance!
 ```
@@ -245,7 +257,7 @@ Would love feedback from this community:
 - What features would make you sign up?
 - What price feels right for this service?
 
-Landing page: https://nickdeng1.github.io/Auto-Company/
+Landing page: https://nickdeng1.github.io/Auto-Company/?utm_source=indiehackers&utm_medium=post&utm_campaign=launch
 
 Happy to answer any questions about the build or the idea!
 ```
