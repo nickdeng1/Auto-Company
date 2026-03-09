@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="WebhookRelay - Reliable webhook delivery as a service. Never miss a webhook again.">
+    <meta name="keywords" content="webhook, delivery, reliability, API, SaaS, developer tools">
+    <title>WebhookRelay - Reliable Webhook Delivery as a Service</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="#" class="logo">
+                <span class="logo-icon">⚡</span>
+                <span class="logo-text">WebhookRelay</span>
+            </a>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#pricing">Pricing</a>
+                <a href="#faq">FAQ</a>
+                <a href="#waitlist" class="btn btn-primary btn-sm">Join Waitlist</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-badge">
+                <span class="badge">🚀 Coming Soon</span>
+            </div>
+            <h1 class="hero-title">
+                Never Miss a Webhook<br>
+                <span class="gradient-text">Again</span>
+            </h1>
+            <p class="hero-subtitle">
+                Reliable webhook delivery as a service. Retry logic, detailed logs, 
+                and instant alerts — so you can focus on building, not debugging.
+            </p>
+            <div class="hero-cta">
+                <form id="waitlist-form-hero" class="waitlist-form">
+                    <input type="email" placeholder="Enter your email" required>
+                    <button type="submit" class="btn btn-primary">Join Waitlist</button>
+                </form>
+                <p class="waitlist-count">
+                    <span id="waitlist-count">247</span> developers already on the list
+                </p>
+            </div>
+            <div class="hero-visual">
+                <div class="code-window">
+                    <div class="code-header">
+                        <span class="dot red"></span>
+                        <span class="dot yellow"></span>
+                        <span class="dot green"></span>
+                        <span class="filename">webhook-relay.js</span>
+                    </div>
+                    <pre class="code-content"><code><span class="keyword">import</span> { WebhookRelay } <span class="keyword">from</span> <span class="string">'@webhookrelay/sdk'</span>;
+
+<span class="keyword">const</span> relay = <span class="keyword">new</span> <span class="function">WebhookRelay</span>({
+  endpoint: <span class="string">'https://api.webhookrelay.io'</span>,
+  retries: <span class="number">5</span>,
+  timeout: <span class="number">30000</span>
+});
+
+<span class="comment">// Forward webhooks with automatic retry</span>
+relay.<span class="function">forward</span>(<span class="string">'stripe.payment'</span>, <span class="string">'https://your-app.com/webhooks'</span>);
+relay.<span class="function">forward</span>(<span class="string">'github.push'</span>, <span class="string">'https://ci.your-app.com/hook'</span>);
+
+<span class="comment">// Get detailed logs and alerts</span>
+relay.<span class="function">onFailure</span>((event) => {
+  console.<span class="function">log</span>(<span class="string">'Webhook failed after 5 retries:'</span>, event);
+});</code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem Section -->
+    <section class="problem">
+        <div class="container">
+            <h2 class="section-title">The Problem We Solve</h2>
+            <div class="problem-grid">
+                <div class="problem-card">
+                    <div class="problem-icon">💀</div>
+                    <h3>Lost Webhooks = Lost Revenue</h3>
+                    <p>Stripe payment webhooks fail silently. Your customer pays, but you never know.</p>
+                </div>
+                <div class="problem-card">
+                    <div class="problem-icon">🔍</div>
+                    <h3>Debugging Nightmares</h3>
+                    <p>"Did the webhook arrive? When? What was the payload?" — No visibility, no answers.</p>
+                </div>
+                <div class="problem-card">
+                    <div class="problem-icon">⏰</div>
+                    <h3>Build vs. Buy</h3>
+                    <p>Building retry logic, queues, and monitoring takes weeks. You just want it to work.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <h2 class="section-title">Built for Developers Who Ship</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <h3>Smart Retry Logic</h3>
+                    <p>Exponential backoff with configurable retry policies. Handle transient failures automatically.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Detailed Logs</h3>
+                    <p>Every webhook logged with full payload, headers, and response. Search and filter instantly.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔔</div>
+                    <h3>Instant Alerts</h3>
+                    <p>Slack, email, or webhook notifications when deliveries fail. Know before your customers do.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔐</div>
+                    <h3>Signature Verification</h3>
+                    <p>Verify webhook authenticity with HMAC signatures. Security built-in from day one.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Sub-100ms Latency</h3>
+                    <p>Global edge network for fast delivery. Your webhooks arrive in milliseconds, not seconds.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🛠️</div>
+                    <h3>Easy Integration</h3>
+                    <p>One line of code. Works with Stripe, GitHub, Slack, and 50+ other services out of the box.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works">
+        <div class="container">
+            <h2 class="section-title">How It Works</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Connect Your Sources</h3>
+                    <p>Point Stripe, GitHub, or any webhook source to your WebhookRelay endpoint.</p>
+                </div>
+                <div class="step-arrow">→</div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>We Handle Reliability</h3>
+                    <p>Automatic retries, queueing, and monitoring. You focus on your app.</p>
+                </div>
+                <div class="step-arrow">→</div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Deliver to Your App</h3>
+                    <p>Webhooks arrive reliably at your endpoint. Full logs and alerts included.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="pricing">
+        <div class="container">
+            <h2 class="section-title">Simple, Transparent Pricing</h2>
+            <p class="section-subtitle">Start free, scale as you grow</p>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <div class="pricing-header">
+                        <h3>Starter</h3>
+                        <div class="price">
+                            <span class="currency">$</span>
+                            <span class="amount">29</span>
+                            <span class="period">/mo</span>
+                        </div>
+                    </div>
+                    <ul class="pricing-features">
+                        <li>✓ 10,000 webhooks/month</li>
+                        <li>✓ 3 endpoints</li>
+                        <li>✓ 7-day log retention</li>
+                        <li>✓ Email alerts</li>
+                        <li>✓ Basic retry logic</li>
+                    </ul>
+                    <a href="#waitlist" class="btn btn-outline btn-block">Join Waitlist</a>
+                </div>
+                <div class="pricing-card featured">
+                    <div class="pricing-badge">Most Popular</div>
+                    <div class="pricing-header">
+                        <h3>Pro</h3>
+                        <div class="price">
+                            <span class="currency">$</span>
+                            <span class="amount">79</span>
+                            <span class="period">/mo</span>
+                        </div>
+                    </div>
+                    <ul class="pricing-features">
+                        <li>✓ 100,000 webhooks/month</li>
+                        <li>✓ 10 endpoints</li>
+                        <li>✓ 30-day log retention</li>
+                        <li>✓ Slack + email alerts</li>
+                        <li>✓ Advanced retry policies</li>
+                        <li>✓ Custom headers</li>
+                    </ul>
+                    <a href="#waitlist" class="btn btn-primary btn-block">Join Waitlist</a>
+                </div>
+                <div class="pricing-card">
+                    <div class="pricing-header">
+                        <h3>Scale</h3>
+                        <div class="price">
+                            <span class="currency">$</span>
+                            <span class="amount">199</span>
+                            <span class="period">/mo</span>
+                        </div>
+                    </div>
+                    <ul class="pricing-features">
+                        <li>✓ 500,000 webhooks/month</li>
+                        <li>✓ Unlimited endpoints</li>
+                        <li>✓ 90-day log retention</li>
+                        <li>✓ Webhook + Slack + email</li>
+                        <li>✓ Priority support</li>
+                        <li>✓ Dedicated infrastructure</li>
+                    </ul>
+                    <a href="#waitlist" class="btn btn-outline btn-block">Join Waitlist</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section id="faq" class="faq">
+        <div class="container">
+            <h2 class="section-title">Frequently Asked Questions</h2>
+            <div class="faq-grid">
+                <div class="faq-item">
+                    <h3>Why not just use Stripe/GitHub webhooks directly?</h3>
+                    <p>Native webhooks have no retry logic, limited logging, and no alerting. When they fail, you're blind. WebhookRelay adds the reliability layer you need.</p>
+                </div>
+                <div class="faq-item">
+                    <h3>How is this different from webhook services like Svix?</h3>
+                    <p>Svix is great for sending webhooks. We focus on receiving and forwarding them reliably. Think of us as a smart proxy between webhook sources and your app.</p>
+                </div>
+                <div class="faq-item">
+                    <h3>What happens if my server is down?</h3>
+                    <p>We queue webhooks and retry with exponential backoff. Once your server is back up, we deliver all pending webhooks. Nothing is lost.</p>
+                </div>
+                <div class="faq-item">
+                    <h3>Is there a free tier?</h3>
+                    <p>Yes! We'll offer a free tier with 1,000 webhooks/month for hobby projects. Perfect for testing and small apps.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Waitlist Section -->
+    <section id="waitlist" class="waitlist">
+        <div class="container">
+            <div class="waitlist-content">
+                <h2>Be the First to Try</h2>
+                <p>Join the waitlist and get early access when we launch. We'll also send you a 50% off coupon for your first 3 months.</p>
+                <form id="waitlist-form-main" class="waitlist-form-large">
+                    <div class="form-group">
+                        <input type="email" id="email-input" placeholder="Enter your email" required>
+                        <button type="submit" class="btn btn-primary btn-lg">Join Waitlist</button>
+                    </div>
+                    <p class="form-note">
+                        <span id="waitlist-count-main">247</span> developers already on the list · No spam, ever
+                    </p>
+                </form>
+                <div id="success-message" class="success-message" style="display: none;">
+                    <div class="success-icon">✓</div>
+                    <h3>You're on the list!</h3>
+                    <p>We'll email you when WebhookRelay is ready. Check your inbox for confirmation.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <a href="#" class="logo">
+                        <span class="logo-icon">⚡</span>
+                        <span class="logo-text">WebhookRelay</span>
+                    </a>
+                    <p>Reliable webhook delivery as a service.</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Product</h4>
+                        <a href="#features">Features</a>
+                        <a href="#pricing">Pricing</a>
+                        <a href="#faq">FAQ</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Company</h4>
+                        <a href="https://github.com/nickdeng1/Auto-Company">GitHub</a>
+                        <a href="mailto:hello@webhookrelay.io">Contact</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 WebhookRelay. Built by Auto Company.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
