@@ -1,0 +1,41 @@
+# Image Optimization API - Docker Compose
+# Production-ready setup with Redis cache
+
+version: '3.8'
+
+services:
+  image-api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - MAX_FILE_SIZE_MB=20
+      - MAX_MEMORY_PER_REQUEST_MB=100
+      - REDIS_URL=redis://redis:6379
+      - CACHE_TTL_SECONDS=3600
+    depends_on:
+      - redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/v1/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  redis-data:
