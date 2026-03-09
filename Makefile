@@ -1,11 +1,24 @@
 .PHONY: start start-awake awake stop status last cycles monitor pause resume install uninstall team help
+.PHONY: start-claude start-qwen start-codex start-opencode team-claude team-qwen
 
 UNAME_S := $(shell uname -s 2>/dev/null || echo Unknown)
 
 # === Quick Start ===
 
-start: ## Start the auto-loop in foreground
+start: ## Start the auto-loop in foreground (default: qwen)
 	./scripts/core/auto-loop.sh
+
+start-qwen: ## Start auto-loop with Qwen engine
+	ENGINE=qwen ./scripts/core/auto-loop.sh
+
+start-codex: ## Start auto-loop with Codex engine
+	ENGINE=codex ./scripts/core/auto-loop.sh
+
+start-opencode: ## Start auto-loop with OpenCode engine
+	ENGINE=opencode ./scripts/core/auto-loop.sh
+
+start-claude: ## Start auto-loop with Claude engine
+	ENGINE=claude ./scripts/core/auto-loop.sh
 
 start-awake: ## Start loop and prevent macOS sleep while running
 ifeq ($(UNAME_S),Darwin)
@@ -83,6 +96,15 @@ endif
 
 team: ## Start interactive Codex session
 	cd "$(CURDIR)" && codex
+
+team-codex: ## Start interactive Codex session
+	cd "$(CURDIR)" && codex
+
+team-qwen: ## Start interactive Qwen session
+	cd "$(CURDIR)" && qwen
+
+team-claude: ## Start interactive Claude session
+	cd "$(CURDIR)" && claude
 
 # === Maintenance ===
 

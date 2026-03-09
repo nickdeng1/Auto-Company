@@ -38,9 +38,15 @@ ENGINE="${ENGINE:-qwen}"
 CODEX_BIN="${CODEX_BIN:-}"
 QWEN_BIN="${QWEN_BIN:-}"
 OPENCODE_BIN="${OPENCODE_BIN:-}"
+CLAUDE_BIN="${CLAUDE_BIN:-}"
 
 # === Codex-specific Settings ===
 CODEX_SANDBOX_MODE="${CODEX_SANDBOX_MODE:-danger-full-access}"
+
+# === Claude-specific Settings ===
+# CLAUDE_MODEL: Leave empty to use Claude CLI's default model
+CLAUDE_MODEL="${CLAUDE_MODEL:-}"
+CLAUDE_TOOLS="${CLAUDE_TOOLS:-all}"
 
 # === Feature Flags ===
 export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS="${CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS:-1}"
@@ -51,11 +57,11 @@ export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS="${CLAUDE_CODE_EXPERIMENTAL_AGENT_TE
 validate_engine() {
     local eng="${1:-$ENGINE}"
     case "$eng" in
-        codex|qwen|opencode)
+        codex|qwen|opencode|claude)
             return 0
             ;;
         *)
-            echo "Error: Unknown engine '$eng'. Valid options: codex, qwen, opencode" >&2
+            echo "Error: Unknown engine '$eng'. Valid options: codex, qwen, opencode, claude" >&2
             return 1
             ;;
     esac
@@ -98,4 +104,20 @@ Loop Settings:
   Limit Wait: ${LIMIT_WAIT_SECONDS}s
   Max Logs: ${MAX_LOGS}
 EOF
+
+    # Engine-specific settings
+    case "$ENGINE" in
+        claude)
+            echo ""
+            echo "Claude Settings:"
+            echo "  Model: ${CLAUDE_MODEL:-<default>}"
+            echo "  Permission Mode: ${CLAUDE_PERMISSION_MODE}"
+            echo "  Allowed Tools: ${CLAUDE_TOOLS}"
+            ;;
+        codex)
+            echo ""
+            echo "Codex Settings:"
+            echo "  Sandbox Mode: ${CODEX_SANDBOX_MODE}"
+            ;;
+    esac
 }
